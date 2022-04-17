@@ -14,8 +14,9 @@
 #include<pthread.h>
 #include<chrono>
 #include<climits>
+
 #include "constants.h"
-// #include "Player.cpp"
+#include "Player.cpp"
 using namespace std;
 
 /*-----CONSTANTS & VARIABLES-----*/
@@ -37,6 +38,9 @@ extern SDL_Renderer* gRenderer;
 
 // map texture
 SDL_Texture* mapTexture = NULL;
+
+// player texture
+SDL_Texture* playerTexture = NULL;
 
 //Game Controller 1 handler
 extern SDL_Joystick* gGameController;
@@ -171,6 +175,7 @@ void LTexture::free()
 void LTexture::render(int x, int y)
 {
 	//Set rendering space and render to screen
+	// std::cout << "Rendered at :" << x << ", " << y << "\n";
 	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
 	SDL_RenderCopy( gRenderer, mTexture, NULL, &renderQuad );
 }
@@ -502,23 +507,27 @@ bool loadMedia()
 	bool success = true;
 
 	//Load Foo' texture
-	if( !gFooTexture.loadFromFile("foo.png",false ) )
+	if( !gFooTexture.loadFromFile("./data/undertale.png",false ) )
 	{
 		printf( "Failed to load Foo' texture image!\n" );
 		success = false;
 	}
-	if( !gFooTexture_2.loadFromFile("foo.png",false ) )
+	
+	if( !gFooTexture_2.loadFromFile("./data/undertale.png",false ) )
 	{
 		printf( "Failed to load Foo' texture image!\n" );
 		success = false;
 	}
+	
 	//Load background texture
 	mapTexture = loadTexture("./data/tile.png");
-	if (mapTexture == NULL){
+	playerTexture = loadTexture("./data/undertale.png");
+	if (mapTexture == NULL || mapTexture == NULL){
 	// if( !gBackgroundTexture.loadFromFile("background.png",true ) )
 		printf( "Failed to load background texture image!\n" );
 		success = false;
 	}
+	
 	if ( !gstartscreen.loadFromFile("back.png",true ) )
 	{
 		printf( "Failed to load background start image!\n" );
@@ -530,6 +539,7 @@ bool loadMedia()
 		printf( "Failed to load background start image!\n" );
 		success = false;
 	}
+	
 	if ( !gstartcontrol.loadFromFile("control.png",true ))
 	{
 		printf( "Failed to load background start image!\n" );
@@ -615,6 +625,8 @@ void close()
 
 	SDL_DestroyTexture(mapTexture);
 	mapTexture = NULL;
+	SDL_DestroyTexture(playerTexture);
+	playerTexture = NULL;
 
     //free text
     Screen_Start.free();

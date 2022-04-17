@@ -76,6 +76,9 @@ void* start(void* arg){
 			//Event handler
 			SDL_Event e;
 
+			// Player
+			Player player;
+
 			//While application is running
 			while( !quit ){
 				//Handle events on queue
@@ -148,10 +151,17 @@ void* start(void* arg){
 							}
 						}
 
-						//Render Foos to the screen
-						gFooTexture.render(x,y);
+						SDL_Rect renderQuad;
+						renderQuad.x = player.mPosX;
+						renderQuad.y = player.mPosY,
+						renderQuad.w = player.PLAYER_WIDTH,
+						renderQuad.h = player.PLAYER_HEIGHT;
+						SDL_RenderSetViewport(gRenderer, &renderQuad);
+						SDL_RenderCopy(gRenderer, playerTexture, NULL, NULL);
 
-						gFooTexture_2.render(x2,y2);
+						//Render Foos to the screen
+						// gFooTexture.render(x,y);
+						// gFooTexture_2.render(x2,y2);
 					}
 				}
 				//Update screen
