@@ -20,8 +20,8 @@ class Player{
         //Maximum axis velocity of the PLAYER
         static const int PLAYER_VEL = TILE_SIZE/5;
 
-        // Player's hitbox
-        SDL_Rect mCollider;
+        // // Player's hitbox
+        // SDL_Rect mCollider;
 
         //Initializes the variables
         Player();
@@ -30,7 +30,7 @@ class Player{
         void handleEvent( SDL_Event& e );
 
         //Moves the player
-        // void move();
+        void move();
 
         //Moves the player
         void move(SDL_Rect& wall);
@@ -44,8 +44,8 @@ Player::Player(){
     mPosX = 3*TILE_SIZE;
     mPosY = 2*TILE_SIZE;
 
-    mCollider.w = TILE_SIZE;
-    mCollider.h = TILE_SIZE;
+    // mCollider.w = TILE_SIZE;
+    // mCollider.h = TILE_SIZE;
 
     //Initialize the velocity
     mVelX = 0;
@@ -111,7 +111,7 @@ bool checkCollision(SDL_Rect a, SDL_Rect b){
     return true;
 }
 
-/*
+
 void Player::move(){
 
     // std::cout << "Current Positon: " << mPosX << ", " << mPosY << "\n\n";
@@ -133,8 +133,7 @@ void Player::move(){
         mPosY -= mVelY;
     }
 }
-*/
-
+/*
 void Player::move(SDL_Rect& wall){
     //Move the player left or right
     mPosX += mVelX;
@@ -159,5 +158,5 @@ void Player::move(SDL_Rect& wall){
 		mCollider.y = mPosY;
     }
 }
-
+*/
 #endif

@@ -86,8 +86,8 @@ void* start(void* arg){
 					if( e.type == SDL_QUIT ){
 						quit = true;
 					}
-					if( e.type == SDL_KEYDOWN ){
-						Client_Keyboard_Handle(e);
+					if( e.type == SDL_KEYDOWN || e.type == SDL_KEYUP ){
+						Client_Keyboard_Handle(e, client_player);
 					}
 					if( e.type == SDL_JOYAXISMOTION ){
 						Client_Gamepad_Handle(e);
@@ -96,6 +96,9 @@ void* start(void* arg){
 						Mouse_Handle(e,server);
 					}
 				}
+
+				// move the player
+				client_player.move();
 	
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );

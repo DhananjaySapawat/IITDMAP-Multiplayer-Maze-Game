@@ -710,6 +710,7 @@ void Keyboard_Start_Screen(SDL_Event e , int c){
 	return ;
 }
 
+/*
 void Server_Keyboard_Handle(SDL_Event e){
 	if(gamestart){
 		Keyboard_Start_Screen(e, client);
@@ -799,8 +800,9 @@ void Server_Keyboard_Handle(SDL_Event e){
     }
     return;
 }
-/*
-void Server_Keyboard_Handle(SDL_Event e, Player player){
+*/
+
+void Server_Keyboard_Handle(SDL_Event e, Player& server_player){
 	if(gamestart){
 		Keyboard_Start_Screen(e, client);
 		return ;
@@ -810,28 +812,35 @@ void Server_Keyboard_Handle(SDL_Event e, Player player){
 		case SDLK_RIGHT:{
 			char msg[] = "right";
 			send(client, msg , sizeof(msg) , 0);
-			x2 = x2 + 10;
+			server_player.handleEvent(e);
 			break;
 		}	
 
 		case SDLK_LEFT:{
 			char msg[] = "left";
 			send(client, msg , sizeof(msg) , 0);
-			x2 = x2 - 10;
+			server_player.handleEvent(e);
 			break;
 		}
 
 		case SDLK_UP:{
 			char msg[] = "up";
 			send(client, msg , sizeof(msg) , 0);
-			y2 = y2 - 10;
+			server_player.handleEvent(e);
 			break;
 		}
 
 		case SDLK_DOWN:{
 			char msg[] = "down";
 			send(client, msg , sizeof(msg) , 0 );
-			y2 = y2 + 10;
+			server_player.handleEvent(e);
+			break;
+		}
+
+		case SDL_KEYUP:{
+			char msg[] = "stop";
+			send(client, msg , sizeof(msg) , 0 );
+			server_player.handleEvent(e);
 			break;
 		}
 
@@ -889,7 +898,8 @@ void Server_Keyboard_Handle(SDL_Event e, Player player){
     }
     return;
 }
-*/
+
+/*
 void Client_Keyboard_Handle(SDL_Event e){
 	if(gamestart){
 		Keyboard_Start_Screen(e,server);
@@ -927,6 +937,109 @@ void Client_Keyboard_Handle(SDL_Event e){
 		send(server, msg , sizeof(msg) , 0 );
 		y = y + 10;
 		break;
+		}
+
+		//Play high sound effect
+    	case SDLK_1:
+    	{
+    	Mix_PlayChannel( -1, gHigh, 0 );
+    	break;
+		}
+                            
+    	//Play medium sound effect
+    	case SDLK_2:
+    	{
+    	Mix_PlayChannel( -1, gMedium, 0 );
+    	break;
+		}
+                            
+    	//Play low sound effect
+    	case SDLK_3:
+    	{
+    	Mix_PlayChannel( -1, gLow, 0 );
+    	break;
+		}
+                            
+    	//Play scratch sound effect
+    	case SDLK_4:
+    	{
+    	Mix_PlayChannel( -1, gScratch, 0 );
+    	break;
+		}
+
+    	case SDLK_9:{
+    	//If there is no music playing
+		if( Mix_PlayingMusic() == 0 ){
+			//Play the music
+			Mix_PlayMusic( gMusic, -1 );
+		}
+		//If music is being played
+		else{
+			//If the music is paused
+			if( Mix_PausedMusic() == 1 ){
+				//Resume the music
+				Mix_ResumeMusic();
+       	    }
+			//If the music is playing
+			else{
+				//Pause the music
+				Mix_PauseMusic();
+			}
+		}
+		break;
+		}
+                            
+		case SDLK_0:
+		{
+		//Stop the music
+		Mix_HaltMusic();
+		break;
+		}
+    }
+    return ;
+}
+*/
+
+void Client_Keyboard_Handle(SDL_Event e, Player& client_player){
+	if(gamestart){
+		Keyboard_Start_Screen(e,server);
+		return ;
+	}
+	switch(e.key.keysym.sym){
+                     
+		case SDLK_RIGHT:{
+			char msg[] = "right";
+			send(server, msg , sizeof(msg) , 0 );
+			client_player.handleEvent(e);
+			break;
+		}	
+
+		case SDLK_LEFT:{
+			char msg[] = "left";
+			send(server, msg , sizeof(msg) , 0 );
+			client_player.handleEvent(e);
+			break;
+		}
+
+		case SDLK_UP:{
+			char msg[] = "up";
+			send(server, msg , sizeof(msg) , 0 );
+			client_player.handleEvent(e);
+			break;
+		}
+
+		case SDLK_DOWN:{
+			char msg[] = "down";
+			send(server, msg , sizeof(msg) , 0 );
+			client_player.handleEvent(e);
+			break;
+		}
+
+		case SDL_KEYUP:{
+			char msg[] = "stop";
+			send(server, msg , sizeof(msg) , 0 );
+			client_player.handleEvent(e);
+			break;
 		}
 
 		//Play high sound effect
