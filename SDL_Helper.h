@@ -1,6 +1,7 @@
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_image.h>
 #include<SDL2/SDL_mixer.h>
+#include<SDL2/SDL_ttf.h>
 #include<iostream>
 #include<string.h>
 #include<sys/types.h>
@@ -14,12 +15,17 @@
 #include<chrono>
 #include<climits>
 
+
 using namespace std;
 
-extern int x,y,x2,y2,client,server;
-extern bool gamestart,gamewait;
-int g = 0.1;
-int t = g;
+extern int x,y,x2,y2,sx,sy,sh,sw,client,server,si;
+extern bool gamestart;
+extern bool gamepart[4];
+extern bool Player2;
+extern bool quit;
+double g = 0.1;
+double t = g;
+int array_sx[4][4] = {{490,205,200,80},{430,285,320,80},{370,365,440,80},{500,445,190,80}};
 
 //The window we'll be rendering to
 extern SDL_Window* gWindow ;
@@ -37,8 +43,8 @@ extern Mix_Music *gMusic ;
 extern Mix_Chunk *gScratch,*gHigh,*gMedium,*gLow;
 
 const int JOYSTICK_DEAD_ZONE = 8000;
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 1200;
+const int SCREEN_HEIGHT = 650;
 
 int buffer_size = 1024;
 int Server_Port = 5476;
@@ -51,56 +57,38 @@ enum LButtonSprite
 	BUTTON_SPRITE_MOUSE_UP = 3,
 	BUTTON_SPRITE_TOTAL = 4
 };
-bool check(int a ,int b){
-	if(a > 154 and a<=394 and b>300 and b<=350){
-		return true;
-	}
-	return false;
-}
-int give_x(string s){
-	int i = 1;
-	int j = 1;
-	int b = 1;
-	if(s[i] == '-'){
-		i++;
-		j++;
-		while(s[j]!='y'){
-			j++;
-		}
-		b = -1;
-	}
-	else{
-		while(s[j]!='y'){
-			j++;
+int check(int a ,int b){
+	for(int i = 0;i<4;i++){
+		if(a >= array_sx[i][0] and a<=array_sx[i][0]+array_sx[i][2] and b>=array_sx[i][1] and b<=array_sx[i][1]+array_sx[i][3]){
+			return i;
 		}
 	}
-	int a = stoi(s.substr(i,j-1));
-	int c = a*b;
-	return c;
+	return -1;
 }
-int give_y(string s){
-	int i = 1;
-	int b = 1;
-	while(s[i]!='y'){
-		i++;
-	}
-	if(s[i]=='-'){
-		b = -1;
-		i++;
-	}
-	int a = stoi(s.substr(i+1));
-	int c = a*b;
-	return c;
+int Give_Value(string s){
+	int a = stoi(s.substr(1));
+	return a;
 }
 void* Server_Check(void* arg){
 	std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
+    int count = 0;
+    string s;
 	while(1){
+		if(quit){
+			 exit(0);
+		}
 		end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = end - start;
         if(elapsed_seconds.count() > t){
         	t = t + g;
-        	string s = "x" + to_string(x2) + "y" + to_string(y2);
+        	count++;
+        	if(count%2 ==0 ){
+        		s = "x" + to_string(x2);
+        	}
+        	else{
+        		s = "y" + to_string(y2);
+        	}
     		char* msg = &s[0];
     		send(client,msg,sizeof(msg),0);
         }
@@ -110,12 +98,23 @@ void* Server_Check(void* arg){
 void* Client_Check(void* arg){
 	std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
+    int count = 0;
+    string s;
 	while(1){
+		if(quit){
+			 exit(0);
+		}
 		end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = end - start;
         if(elapsed_seconds.count() > t){
         	t = t + g;
-        	string s = "x" + to_string(x) + "y" + to_string(y);
+        	count++;
+        	if(count%2 ==0 ){
+        		s = "x" + to_string(x);
+        	}
+        	else{
+        		s = "y" + to_string(y);
+        	}
     		char* msg = &s[0];
     		send(server,msg,sizeof(msg),0);
         }
@@ -130,23 +129,38 @@ void* Server_Recieve(void* arg){
 		Client_Read = read(client , buffer, buffer_size );
     	if(buffer[0] == 'r'){
     		x = x + 10;
+    		//cout<<buffer<<endl;
     	}
     	if(buffer[0] == 'l'){
     		x = x - 10;
+    		//cout<<buffer<<endl;
     	}
     	if(buffer[0] == 'u'){
     		y = y - 10;
+    		//cout<<buffer<<endl;
     	}
     	if(buffer[0] == 'd'){
     		y = y + 10;
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 's'){
+    		Player2 = true;
+    		if(gamepart[0]){
+    			char msg[] = "start";
+				send(client, msg , sizeof(msg) , 0 );
+    		}
     	}
     	if(buffer[0] == 'x'){
     		string s = buffer;
-    		x = give_x(s);
-    		y = give_y(s);
-    		continue;
+    		x = Give_Value(s);
+    		cout<<buffer<<endl;
     	}
-    	cout<<buffer<<endl;
+    	if(buffer[0] == 'y'){
+    		string s = buffer;
+    		y = Give_Value(s);
+    		cout<<buffer<<endl;
+    	}
+    	
     }
     pthread_exit(NULL);
 }
@@ -158,23 +172,38 @@ void* Client_Recieve(void* arg){
 		Server_Read = read(server , buffer, buffer_size );
 		if(buffer[0] == 'r'){
     		x2 = x2 + 10;
+    		//cout<<buffer<<endl;
     	}
     	if(buffer[0] == 'l'){
     		x2 = x2 - 10;
+    		//cout<<buffer<<endl;
     	}
     	if(buffer[0] == 'u'){
     		y2 = y2 - 10;
+    		//cout<<buffer<<endl;
     	}
     	if(buffer[0] == 'd'){
     		y2 = y2 + 10;
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 's'){
+    		Player2 = true;
+    		if(gamepart[0]){
+    			char msg[] = "start";
+				send(server, msg , sizeof(msg) , 0 );
+    		}
     	}
     	if(buffer[0] == 'x'){
     		string s = buffer;
-    		x2 = give_x(s);
-    		y2 = give_y(s);
-    		continue;
+    		x2 = Give_Value(s);
+    		cout<<buffer<<endl;
     	}
-    	cout<<buffer<<endl;
+    	if(buffer[0] == 'y'){
+    		string s = buffer;
+    		y2 = Give_Value(s);
+    		cout<<buffer<<endl;
+    	}
+    	
     }
     pthread_exit(NULL);
 }
@@ -188,7 +217,7 @@ class LTexture
 		~LTexture();
 
 		//Loads image at specified path
-		bool loadFromFile( std::string path );
+		bool loadFromFile(std::string path,bool backscreen);
 
 		//Deallocates texture
 		void free();
@@ -209,7 +238,6 @@ class LTexture
 		int mHeight;
 };
 
-
 LTexture::LTexture()
 {
 	//Initialize
@@ -224,7 +252,7 @@ LTexture::~LTexture()
 	free();
 }
 
-bool LTexture::loadFromFile( std::string path )
+bool LTexture::loadFromFile(std::string path,bool backscreen)
 {
 	//Get rid of preexisting texture
 	free();
@@ -252,8 +280,14 @@ bool LTexture::loadFromFile( std::string path )
 		else
 		{
 			//Get image dimensions
-			mWidth = loadedSurface->w;
-			mHeight = loadedSurface->h;
+			if(backscreen){	
+				mWidth = SCREEN_WIDTH;
+				mHeight = SCREEN_HEIGHT ;
+			}
+			else{
+				mWidth = loadedSurface->w;
+				mHeight = loadedSurface->h;
+			}
 		}
 
 		//Get rid of old loaded surface
@@ -294,9 +328,54 @@ int LTexture::getHeight()
 	return mHeight;
 }
 
-//Scene textures
-extern LTexture gFooTexture,gFooTexture_2,gBackgroundTexture,gstartscreen,gwaitscreen;
+class Ltext
+{	
+	public:
+		bool Text_init(string f , string t , SDL_Color color , int s);
+		void render( int x , int y);
+		void free();
+	private:
+		SDL_Surface* text;
+		SDL_Texture* text_texture;
+		SDL_Renderer* renderer;
+		TTF_Font* font;
+};
 
+bool Ltext::Text_init(string f, string t , SDL_Color color , int s){
+
+	string fon = "/usr/share/fonts/truetype/"+f;
+	const char *fc = fon.c_str();
+	font = TTF_OpenFont(fc, s);
+	if (font == NULL) {
+		cout << "Error loading font: " << TTF_GetError() << endl;
+		return false;
+	}
+	const char *tc = t.c_str();
+	text = TTF_RenderText_Solid( font, tc, {color });
+	if ( !text ) {
+		cout << "Failed to render text: " << TTF_GetError() << endl;
+		return false;
+	}
+
+	return true;
+}
+
+void Ltext::render( int x , int y ){
+
+	text_texture = SDL_CreateTextureFromSurface( gRenderer, text );
+
+	SDL_Rect dest = { x, y, text->w, text->h };
+
+	SDL_RenderCopy( gRenderer, text_texture , NULL , &dest );
+}
+void Ltext::free(){
+	SDL_DestroyTexture( text_texture );
+	SDL_FreeSurface( text );
+}
+//Scene textures
+extern LTexture gFooTexture,gFooTexture_2,gBackgroundTexture,gstartscreen,gwaitscreen,gstartcontrol,gstartinstruction;
+//Scene Text
+extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit;
 bool init()
 {
 	//Initialization flag
@@ -345,6 +424,11 @@ bool init()
 					success = false;
 				}
 
+				// Initialize SDL_ttf
+				if ( TTF_Init() < 0 ) {
+					cout << "Error intializing SDL_ttf: " << TTF_GetError() << endl;
+					return false;
+				}
 				//Initialize SDL_mixer
                 if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
                 {
@@ -374,34 +458,69 @@ bool loadMedia()
 	bool success = true;
 
 	//Load Foo' texture
-	if( !gFooTexture.loadFromFile( "foo.png" ) )
+	if( !gFooTexture.loadFromFile("foo.png",false ) )
 	{
 		printf( "Failed to load Foo' texture image!\n" );
 		success = false;
 	}
-	if( !gFooTexture_2.loadFromFile( "foo.png" ) )
+	if( !gFooTexture_2.loadFromFile("foo.png",false ) )
 	{
 		printf( "Failed to load Foo' texture image!\n" );
 		success = false;
 	}
 	//Load background texture
-	if( !gBackgroundTexture.loadFromFile( "background.png" ) )
+	if( !gBackgroundTexture.loadFromFile("background.png",true ) )
 	{
 		printf( "Failed to load background texture image!\n" );
 		success = false;
 	}
-	if ( !gstartscreen.loadFromFile( "start.png" ) )
+	if ( !gstartscreen.loadFromFile("back.png",true ) )
 	{
 		printf( "Failed to load background start image!\n" );
 		success = false;
 	}
 	
-	if ( !gwaitscreen.loadFromFile( "wait.png" ) )
+	if ( !gwaitscreen.loadFromFile("wait.png",true ) )
+	{
+		printf( "Failed to load background start image!\n" );
+		success = false;
+	}
+	if ( !gstartcontrol.loadFromFile("control.png",true ))
 	{
 		printf( "Failed to load background start image!\n" );
 		success = false;
 	}
 
+	if ( !gstartinstruction.loadFromFile("ins.png",true ))
+	{
+		printf( "Failed to load background start image!\n" );
+		success = false;
+	}
+
+	//Load Text
+	if ( !Screen_Start.Text_init("tlwg/Kinnari-BoldItalic.ttf","Start",{255,255,255},80) )
+	{
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+
+	if ( !Screen_Controls.Text_init("tlwg/Kinnari-BoldItalic.ttf","Controls",{255,255,255},80) )
+	{
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+
+	if ( !Screen_Instructions.Text_init("tlwg/Kinnari-BoldItalic.ttf","Instructions",{255,255,255},80) )
+	{
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+
+	if ( !Screen_Quit.Text_init("tlwg/Kinnari-BoldItalic.ttf","Quit",{255,255,255},80) )
+	{
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
 	//Load music
 	gMusic = Mix_LoadMUS( "beat.wav" );
 	if( gMusic == NULL )
@@ -449,6 +568,13 @@ void close()
 	gstartscreen.free();
     gwaitscreen.free();
 
+    //free text
+    Screen_Start.free();
+   	Screen_Controls.free();
+	Screen_Instructions.free();
+	Screen_Quit.free();
+
+
 	//Close game controller
     SDL_JoystickClose( gGameController );
     gGameController = NULL;
@@ -478,7 +604,50 @@ void close()
     IMG_Quit();
     SDL_Quit();
 }
+
+void Keyboard_Start_Screen(SDL_Event e , int c){
+		if(gamepart[1]){
+			if(e.key.keysym.sym == 	SDLK_BACKSPACE){
+				gamepart[1] = false;
+			}
+			return;
+		}
+		if(gamepart[2]){
+			if(e.key.keysym.sym == 	SDLK_BACKSPACE){
+				gamepart[2] = false;
+			}
+			return;
+		}
+		if(e.key.keysym.sym == 	SDLK_KP_ENTER or e.key.keysym.sym == SDLK_RETURN){
+			if(si == 0){
+				gamestart = false;
+				char msg[] = "start";
+				send(c, msg , sizeof(msg) , 0 );
+			}
+			gamepart[si] = true;
+			return;
+		}                  
+		else if(e.key.keysym.sym == SDLK_UP){
+			if(si != 0){
+				si--;
+			}
+		}
+		else if(e.key.keysym.sym == SDLK_DOWN){
+			if(si != 3){
+				si++;
+			}
+		}
+		sx = array_sx[si][0];
+		sy = array_sx[si][1];
+		sw = array_sx[si][2];
+		sh = array_sx[si][3];
+	return ;
+}
 void Server_Keyboard_Handle(SDL_Event e){
+	if(gamestart){
+		Keyboard_Start_Screen(e,client);
+		return ;
+	}
 	switch(e.key.keysym.sym){
                      
 		case SDLK_RIGHT:
@@ -570,8 +739,13 @@ void Server_Keyboard_Handle(SDL_Event e){
 		break;
 		}
     }
+    return ;
 }
 void Client_Keyboard_Handle(SDL_Event e){
+	if(gamestart){
+		Keyboard_Start_Screen(e,server);
+		return ;
+	}
 	switch(e.key.keysym.sym){
                      
 		case SDLK_RIGHT:
@@ -663,6 +837,7 @@ void Client_Keyboard_Handle(SDL_Event e){
 		break;
 		}
     }
+    return ;
 }
 void Server_Gamepad_Handle(SDL_Event e){
 	//Motion on controller 0
@@ -734,26 +909,35 @@ void Client_Gamepad_Handle(SDL_Event e){
         }
     }
 }
-void Mouse_Handle(SDL_Event e){
+void Mouse_Handle(SDL_Event e , int c){
 	//Get mouse position
 	int mx, my;
 	SDL_GetMouseState(&mx,&my);
-	if(gamestart == true){
-		if(check(mx,my)){
+	int p = check(mx,my);
+	if(e.type == SDL_MOUSEBUTTONDOWN ){
+		if(p == 0){
 			gamestart = false;
+			gamepart[0] = true;
+		}
+		else if (p!=-1){
+			gamepart[p] = true;
 		}
 	}
 	else{
-		if(check(mx,my)){
-		gamewait = false;
+		if(p!=-1){
+			sx = array_sx[p][0];
+			sy = array_sx[p][1];
+			sw = array_sx[p][2];
+			sh = array_sx[p][3];
 		}
 	}
 }
+
 void Server_Connect(){
 	x = 240,y = 190,x2 = 360,y2 = 190;
+	sx = 500 ,sy = 205 , sw = 180 , sh = 80 , si = 0;
 	struct sockaddr_in Server_Address;
 	char buffer[buffer_size] = {0};
-
 	server = socket ( AF_INET, SOCK_STREAM, 0);
 	if (server < 0){
 		cout<<"Opening of Socket Failed !"<<endl;
@@ -772,7 +956,7 @@ void Server_Connect(){
 		exit ( EXIT_FAILURE);
 	}
 	cout<<"Server Socket Bind"<<endl;
-	///*
+
 	listen(server,3);
 	
 	client = accept(server, (struct sockaddr *)&Server_Address,(socklen_t*)&Server_Address_Size);
@@ -781,12 +965,12 @@ void Server_Connect(){
 		cout<<"Client not connect !"<<endl;
 		exit ( EXIT_FAILURE);
 	}
-	//*/
 	cout<<"Client connected !"<<endl;
 }
 void Client_Connect(){
 	x = 240,y = 190,x2 = 360,y2 = 190;
-	struct sockaddr_in Server_Address;
+	sx = 500 ,sy = 205 , sw = 180 , sh = 80 ,si =0 ;
+ 	struct sockaddr_in Server_Address;
 	char buffer[buffer_size] = {0};
 
 	server = socket ( AF_INET, SOCK_STREAM, 0);
