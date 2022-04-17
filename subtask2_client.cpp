@@ -76,7 +76,7 @@ void* start(void* arg){
 			SDL_Event e;
 
 			// Player
-			Player client_player;
+			// Player client_player;
 
 			//While application is running
 			while(!quit){
@@ -87,7 +87,7 @@ void* start(void* arg){
 						quit = true;
 					}
 					if( e.type == SDL_KEYDOWN || e.type == SDL_KEYUP ){
-						Client_Keyboard_Handle(e, client_player);
+						Client_Keyboard_Handle(e);
 					}
 					if( e.type == SDL_JOYAXISMOTION ){
 						Client_Gamepad_Handle(e);
@@ -186,10 +186,8 @@ int main( int argc, char* args[] ){
     pthread_create(&Reciever, NULL, &Client_Recieve, NULL);
 	pthread_create(&Client_Start, NULL, &start, NULL);
 	pthread_create(&checker, NULL, &Client_Check, NULL);
-
 	pthread_join(Reciever, NULL);
 	pthread_join(Client_Start, NULL);
 	pthread_join(checker, NULL);
-
 	return 0;
 }

@@ -76,7 +76,7 @@ void* start(void* arg){
 			SDL_Event e;
 
 			// Player
-			Player server_player;
+			// Player server_player;
 
 			//While application is running
 			while( !quit ){
@@ -87,7 +87,7 @@ void* start(void* arg){
 						quit = true;
 					}
 					if( e.type == SDL_KEYDOWN || e.type == SDL_KEYUP ){
-						Server_Keyboard_Handle(e, server_player);
+						Server_Keyboard_Handle(e);
 					}
 					if( e.type == SDL_JOYAXISMOTION ){
 						Server_Gamepad_Handle(e);

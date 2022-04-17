@@ -69,6 +69,10 @@ enum LButtonSprite{
 	BUTTON_SPRITE_TOTAL = 4
 };
 
+//Players
+Player server_player;
+Player client_player;
+
 /*-----CLASS-----*/
 
 class LTexture
@@ -347,6 +351,75 @@ void* Server_Recieve(void* arg){
 		int Client_Read;
 		Client_Read = read(client , buffer, buffer_size );
     	if(buffer[0] == 'r'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYDOWN;
+			sdlevent.key.keysym.sym = SDLK_RIGHT;
+			SDL_PushEvent(&sdlevent);
+    		client_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 'l'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYDOWN;
+			sdlevent.key.keysym.sym = SDLK_LEFT;
+			SDL_PushEvent(&sdlevent);
+    		client_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 'u'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYDOWN;
+			sdlevent.key.keysym.sym = SDLK_UP;
+			SDL_PushEvent(&sdlevent);
+    		client_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 'd'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYDOWN;
+			sdlevent.key.keysym.sym = SDLK_DOWN;
+			SDL_PushEvent(&sdlevent);
+    		client_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+		if(buffer[0] == 'h'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYUP;
+			// sdlevent.key.keysym.sym = SDLK_RIGHT;
+			SDL_PushEvent(&sdlevent);
+    		client_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 's'){
+    		Player2 = true;
+    		if(gamepart[0]){
+    			char msg[] = "start";
+				send(client, msg , sizeof(msg) , 0 );
+    		}
+    	}
+    	if(buffer[0] == 'x'){
+    		string s = buffer;
+    		x = Give_Value(s);
+    		// cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 'y'){
+    		string s = buffer;
+    		y = Give_Value(s);
+    		// cout<<buffer<<endl;
+    	}
+    	
+    }
+    pthread_exit(NULL);
+}
+
+/*
+void* Server_Recieve(void* arg){
+	int buffer_size = 1024;
+	char buffer[buffer_size] = {0};
+	while(1){
+		int Client_Read;
+		Client_Read = read(client , buffer, buffer_size );
+    	if(buffer[0] == 'r'){
     		x = x + 10;
     		//cout<<buffer<<endl;
     	}
@@ -383,7 +456,77 @@ void* Server_Recieve(void* arg){
     }
     pthread_exit(NULL);
 }
+*/
 
+void* Client_Recieve(void* arg){
+	int buffer_size = 1024;
+	char buffer[buffer_size] = {0};
+	
+	while(1){
+		int Server_Read;
+		Server_Read = read(server , buffer, buffer_size );
+		if(buffer[0] == 'r'){
+			SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYDOWN;
+			sdlevent.key.keysym.sym = SDLK_RIGHT;
+			SDL_PushEvent(&sdlevent);
+    		server_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 'l'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYDOWN;
+			sdlevent.key.keysym.sym = SDLK_LEFT;
+			SDL_PushEvent(&sdlevent);
+    		server_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 'u'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYDOWN;
+			sdlevent.key.keysym.sym = SDLK_UP;
+			SDL_PushEvent(&sdlevent);
+    		server_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 'd'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYDOWN;
+			sdlevent.key.keysym.sym = SDLK_DOWN;
+			SDL_PushEvent(&sdlevent);
+    		server_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+		if(buffer[0] == 'h'){
+    		SDL_Event sdlevent = {};
+			sdlevent.type = SDL_KEYUP;
+			// sdlevent.key.keysym.sym = SDLK_DOWN;
+			SDL_PushEvent(&sdlevent);
+    		server_player.handleEvent(sdlevent);
+    		//cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 's'){
+    		Player2 = true;
+    		if(gamepart[0]){
+    			char msg[] = "start";
+				send(server, msg , sizeof(msg) , 0 );
+    		}
+    	}
+    	if(buffer[0] == 'x'){
+    		string s = buffer;
+    		x2 = Give_Value(s);
+    		// cout<<buffer<<endl;
+    	}
+    	if(buffer[0] == 'y'){
+    		string s = buffer;
+    		y2 = Give_Value(s);
+    		// cout<<buffer<<endl;
+    	}
+    }
+    pthread_exit(NULL);
+}
+
+/*
 void* Client_Recieve(void* arg){
 	int buffer_size = 1024;
 	char buffer[buffer_size] = {0};
@@ -426,6 +569,7 @@ void* Client_Recieve(void* arg){
     }
     pthread_exit(NULL);
 }
+*/
 
 bool init()
 {
@@ -802,7 +946,7 @@ void Server_Keyboard_Handle(SDL_Event e){
 }
 */
 
-void Server_Keyboard_Handle(SDL_Event e, Player& server_player){
+void Server_Keyboard_Handle(SDL_Event e){
 	if(gamestart){
 		Keyboard_Start_Screen(e, client);
 		return ;
@@ -838,7 +982,7 @@ void Server_Keyboard_Handle(SDL_Event e, Player& server_player){
 		}
 
 		case SDL_KEYUP:{
-			char msg[] = "stop";
+			char msg[] = "halt";
 			send(client, msg , sizeof(msg) , 0 );
 			server_player.handleEvent(e);
 			break;
@@ -1000,7 +1144,7 @@ void Client_Keyboard_Handle(SDL_Event e){
 }
 */
 
-void Client_Keyboard_Handle(SDL_Event e, Player& client_player){
+void Client_Keyboard_Handle(SDL_Event e){
 	if(gamestart){
 		Keyboard_Start_Screen(e,server);
 		return ;
