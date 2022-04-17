@@ -12,16 +12,17 @@
 #include<unistd.h>
 #include<netdb.h>
 #include<pthread.h>
+
 #include"SDL_Helper.h"
+
 using namespace std;
 
-int x,y,x2,y2,sx,sy,sh,sw,client,server,si;
+/*-----CONSTANTS & VARIABLES-----*/
+
+int x, y, x2, y2, sx, sy, sh, sw, client, server, si;
 bool gamestart = true;
 bool gamepart[4] = {false};
 bool Player2 = false;
-//Main loop flag
-bool quit = false;
-
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -32,7 +33,7 @@ SDL_Renderer* gRenderer = NULL;
 //Scene textures
 LTexture gFooTexture;
 LTexture gFooTexture_2;
-LTexture gBackgroundTexture;
+// LTexture gBackgroundTexture;
 LTexture gstartscreen;
 LTexture gwaitscreen;
 LTexture gstartcontrol;
@@ -56,30 +57,28 @@ Mix_Chunk *gHigh = NULL;
 Mix_Chunk *gMedium = NULL;
 Mix_Chunk *gLow = NULL;
 
+//Main loop flag
+bool quit = false;
+
+/*-----FUNCTIONS-----*/
+
 void* start(void* arg){
-	if( !init() )
-	{
+	if(!init()){
 		printf( "Failed to initialize!\n" );
 	}
-	else
-	{
+	else{
 		//Load media
-		if( !loadMedia() )
-		{
+		if(!loadMedia()){
 			printf( "Failed to load media!\n" );
 		}
-		else
-		{	
-
+		else{
 			//Event handler
 			SDL_Event e;
 
 			//While application is running
-			while( !quit )
-			{
+			while(!quit){
 				//Handle events on queue
-				while( SDL_PollEvent( &e ) != 0 )
-				{
+				while( SDL_PollEvent( &e ) != 0){
 					//User requests quit
 					if( e.type == SDL_QUIT ){
 						quit = true;
@@ -96,7 +95,7 @@ void* start(void* arg){
 				}
 	
 				//Clear screen
-				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+				SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
 				SDL_RenderClear( gRenderer );
 
 				if(gamestart == true ){
@@ -115,7 +114,7 @@ void* start(void* arg){
 						Screen_Controls.render(450,250);
 						Screen_Instructions.render(390,330);
 						Screen_Quit.render(520,410);
-						for(int i = 0;i<5;i++){
+						for(int i=0; i<5; i++){
 							SDL_Rect outlineRect = {sx-i,sy-i,sw+2*i,sh+2*i};
                 			SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0xFF );        
                 			SDL_RenderDrawRect( gRenderer, &outlineRect );
@@ -131,7 +130,23 @@ void* start(void* arg){
 					}
 					else{
 						//Render background texture to screen
-						gBackgroundTexture.render( 0, 0 );
+						// gBackgroundTexture.render( 0, 0 );
+
+						// Create viewports
+						int i, j;
+						for (i = 0; i < SCREEN_HEIGHT / TILE_SIZE; i++){
+							for (j = 0; j < SCREEN_WIDTH / TILE_SIZE; j++){
+								if (map[i][j]) {
+									SDL_Rect block;
+									block.x = TILE_SIZE * j;
+									block.y = TILE_SIZE * i;
+									block.w = TILE_SIZE;
+									block.h = TILE_SIZE;
+									SDL_RenderSetViewport(gRenderer, &block);
+									SDL_RenderCopy(gRenderer, mapTexture, NULL, NULL);
+								}
+							}
+						}
 
 						//Render Foo' to the screen
 						gFooTexture.render(x,y);
@@ -140,7 +155,7 @@ void* start(void* arg){
 						//Update screen
 					}
 				}
-				SDL_RenderPresent( gRenderer );
+				SDL_RenderPresent(gRenderer);
 			}
 		}
 
@@ -149,8 +164,8 @@ void* start(void* arg){
 		pthread_exit(NULL);
 	}
 }
-int main( int argc, char* args[] )
-{   
+
+int main( int argc, char* args[] ){
 	Client_Connect();
     pthread_t Reciever,Client_Start,checker;
     pthread_create(&Reciever, NULL, &Client_Recieve, NULL);
