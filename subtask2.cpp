@@ -14,8 +14,7 @@
 #include<pthread.h>
 
 #include"SDL_Helper.h"
-// #include "Player.cpp"
-#include "constants.h"
+
 using namespace std;
 
 /*-----CONSTANTS & VARIABLES-----*/
@@ -77,7 +76,7 @@ void* start(void* arg){
 			SDL_Event e;
 
 			// Player
-			Player player;
+			Player server_player;
 
 			//While application is running
 			while( !quit ){
@@ -151,13 +150,14 @@ void* start(void* arg){
 							}
 						}
 
+						// render the player
 						SDL_Rect renderQuad;
-						renderQuad.x = player.mPosX;
-						renderQuad.y = player.mPosY,
-						renderQuad.w = player.PLAYER_WIDTH,
-						renderQuad.h = player.PLAYER_HEIGHT;
+						renderQuad.x = server_player.mPosX;
+						renderQuad.y = server_player.mPosY,
+						renderQuad.w = server_player.PLAYER_WIDTH,
+						renderQuad.h = server_player.PLAYER_HEIGHT;
 						SDL_RenderSetViewport(gRenderer, &renderQuad);
-						SDL_RenderCopy(gRenderer, playerTexture, NULL, NULL);
+						SDL_RenderCopy(gRenderer, server_playerTexture, NULL, NULL);
 
 						//Render Foos to the screen
 						// gFooTexture.render(x,y);
