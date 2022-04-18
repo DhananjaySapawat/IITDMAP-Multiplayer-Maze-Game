@@ -125,8 +125,12 @@ void* start(void* arg){
 
 				if(GameOver){
 					gstartscreen.render(0,0);
-					Screen_Space.render(180,160);
-					Screen_Winner.render(180,130);
+					Screen_Space.mid = true;
+					Screen_WinnerName.mid = true;
+					Screen_Winner.mid = true;
+					Screen_Space.render(180,360);
+					Screen_WinnerName.render(460,200);
+					Screen_Winner.render(100,50);
 				}
 				else if(getname == true){
 					gstartscreen.render(0,0);
@@ -198,7 +202,7 @@ void* start(void* arg){
 							stream << std::fixed << std::setprecision(1) << CountTime;
 							TimeStr = stream.str();
 							cout<<TimeStr<<endl;
-        					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25);
+        					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},85);
         					Screen_Time.render(SCREEN_WIDTH - 6 * TILE_SIZE, SCREEN_HEIGHT - 2 * TILE_SIZE);
 							CountTime = CountTime - 1;
         					if(0>=CountTime){
