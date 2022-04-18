@@ -39,15 +39,6 @@ extern SDL_Window* gWindow ;
 //The window renderer
 extern SDL_Renderer* gRenderer;
 
-// map texture
-SDL_Texture* mapTexture = NULL;
-
-// server-player texture
-SDL_Texture* server_playerTexture = NULL;
-
-// client-player texture
-SDL_Texture* client_playerTexture = NULL;
-
 //Game Controller 1 handler
 extern SDL_Joystick* gGameController;
 
@@ -78,6 +69,7 @@ Player client_player;
 
 /*-----CLASS-----*/
 void Keyboard_Get_Name(SDL_Event e , int c);
+
 class LTexture
 {
 	public:
@@ -99,6 +91,10 @@ class LTexture
 		//Gets image dimensions
 		int getWidth();
 		int getHeight();
+
+		//Set image dimensions
+		void setWidth(int width);
+		void setHeight(int height);
 
 	private:
 		//The actual hardware texture
@@ -200,6 +196,14 @@ int LTexture::getHeight()
 	return mHeight;
 }
 
+void LTexture::setWidth(int width){
+	mWidth = width;
+}
+
+void LTexture::setHeight(int height){
+	mHeight = height;
+}
+
 /*-----CLASS-----*/
 
 class Ltext
@@ -249,9 +253,26 @@ void Ltext::free(){
 }
 
 //Scene textures
-extern LTexture gFooTexture,gFooTexture_2,gBackgroundTexture,gstartscreen,gwaitscreen,gstartcontrol,gstartinstruction;
+extern LTexture gstartscreen,gwaitscreen,gstartcontrol,gstartinstruction;
+
 //Scene Text
 extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit,Screen_Wait1,Screen_Wait2,Screen_GetName,Screen_Time,Screen_Space;
+
+
+/*-----GLOBAL-TEXTURES-----*/
+
+// map texture
+// SDL_Texture* mapTexture = NULL;
+LTexture mapTexture;
+
+// server-player texture
+// SDL_Texture* server_playerTexture = NULL;
+LTexture server_playerTexture;
+
+// client-player texture
+// SDL_Texture* client_playerTexture = NULL;
+LTexture client_playerTexture;
+
 /*-----FUNCTIONS-----*/
 
 SDL_Texture* loadTexture(std::string path){
@@ -655,11 +676,7 @@ bool loadMedia()
 	bool success = true;
 	
 	//Load background texture and player texture
-	mapTexture = loadTexture("./data/tile.png");
-	server_playerTexture = loadTexture("./data/undertale.png");
-	client_playerTexture = loadTexture("./data/undertale.png");
-	
-	if (mapTexture == NULL || server_playerTexture == NULL || client_playerTexture == NULL){
+	if (!mapTexture.loadFromFile("./data/tile.png", true) || !server_playerTexture.loadFromFile("./data/undertale.png", true) || !client_playerTexture.loadFromFile("./data/undertale.png", true)){
 	// if( !gBackgroundTexture.loadFromFile("background.png",true ) )
 		printf( "Failed to load background texture image!\n" );
 		success = false;
@@ -781,12 +798,9 @@ void close(){
 	gstartscreen.free();
     gwaitscreen.free();
 
-	SDL_DestroyTexture(mapTexture);
-	mapTexture = NULL;
-	SDL_DestroyTexture(server_playerTexture);
-	server_playerTexture = NULL;
-	SDL_DestroyTexture(client_playerTexture);
-	client_playerTexture = NULL;
+	mapTexture.free();
+	server_playerTexture.free();
+	client_playerTexture.free();
 
     //free text
     Screen_Start.free();

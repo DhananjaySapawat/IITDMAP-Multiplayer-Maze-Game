@@ -168,25 +168,17 @@ void* start(void* arg){
 						for (i = 0; i < SCREEN_HEIGHT / TILE_SIZE; i++){
 							for (j = 0; j < SCREEN_WIDTH / TILE_SIZE; j++){
 								if (map[i][j]) {
-									SDL_Rect block;
-									block.x = TILE_SIZE * j;
-									block.y = TILE_SIZE * i;
-									block.w = TILE_SIZE;
-									block.h = TILE_SIZE;
-									SDL_RenderSetViewport(gRenderer, &block);
-									SDL_RenderCopy(gRenderer, mapTexture, NULL, NULL);
+									mapTexture.setWidth(TILE_SIZE);
+									mapTexture.setHeight(TILE_SIZE);
+									mapTexture.render(TILE_SIZE * j, TILE_SIZE * i);
 								}
 							}
 						}
 
 						// render the player
-						SDL_Rect renderQuad;
-						renderQuad.x = server_player.mPosX;
-						renderQuad.y = server_player.mPosY,
-						renderQuad.w = server_player.PLAYER_WIDTH,
-						renderQuad.h = server_player.PLAYER_HEIGHT;
-						SDL_RenderSetViewport(gRenderer, &renderQuad);
-						SDL_RenderCopy(gRenderer, server_playerTexture, NULL, NULL);
+						server_playerTexture.setWidth(server_player.PLAYER_WIDTH);
+						server_playerTexture.setHeight(server_player.PLAYER_HEIGHT);
+						server_playerTexture.render(server_player.mPosX, server_player.mPosY);
 
 						// render timer
 						TimeEnd = std::chrono::system_clock::now();
@@ -199,7 +191,10 @@ void* start(void* arg){
 							TimeStr = stream.str();
 							cout<<TimeStr<<endl;
         					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25);
-        					Screen_Time.render(510,170);
+
+							// Screen_Time.setWidth(3 *TILE_SIZE);
+							// Screen_Time.setHeight(TILE_SIZE);
+        					Screen_Time.render(SCREEN_WIDTH - 6 * TILE_SIZE, SCREEN_HEIGHT - 2 * TILE_SIZE);
 							CountTime = CountTime - 1;
         					if(0>=CountTime){
         						GameOver = true;

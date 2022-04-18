@@ -118,7 +118,7 @@ void* start(void* arg){
 				SDL_RenderClear( gRenderer );
 
 				if(GameOver){
-					std::cout << "GAME OVER!";
+					// std::cout << "GAME OVER!";
 					gstartscreen.render(0,0);
 					Screen_Space.render(180,160);
 				}
@@ -166,25 +166,17 @@ void* start(void* arg){
 						for (i = 0; i < SCREEN_HEIGHT / TILE_SIZE; i++){
 							for (j = 0; j < SCREEN_WIDTH / TILE_SIZE; j++){
 								if (map[i][j]) {
-									SDL_Rect block;
-									block.x = TILE_SIZE * j;
-									block.y = TILE_SIZE * i;
-									block.w = TILE_SIZE;
-									block.h = TILE_SIZE;
-									SDL_RenderSetViewport(gRenderer, &block);
-									SDL_RenderCopy(gRenderer, mapTexture, NULL, NULL);
+									mapTexture.setWidth(TILE_SIZE);
+									mapTexture.setHeight(TILE_SIZE);
+									mapTexture.render(TILE_SIZE * j, TILE_SIZE * i);
 								}
 							}
 						}
 
 						// render the player
-						SDL_Rect renderQuad;
-						renderQuad.x = client_player.mPosX;
-						renderQuad.y = client_player.mPosY,
-						renderQuad.w = client_player.PLAYER_WIDTH,
-						renderQuad.h = client_player.PLAYER_HEIGHT;
-						SDL_RenderSetViewport(gRenderer, &renderQuad);
-						SDL_RenderCopy(gRenderer, client_playerTexture, NULL, NULL);
+						client_playerTexture.setWidth(client_player.PLAYER_WIDTH);
+						client_playerTexture.setHeight(client_player.PLAYER_HEIGHT);
+						client_playerTexture.render(client_player.mPosX, server_player.mPosY);
 
 						// Render Timer
 						TimeEnd = std::chrono::system_clock::now();
