@@ -90,9 +90,6 @@ void* start(void* arg){
 			//Event handler
 			SDL_Event e;
 
-			// Player
-			// Player server_player;
-
 			//While application is running
 			while( !quit ){
 				//Handle events on queue
@@ -112,8 +109,9 @@ void* start(void* arg){
 					}
 				}
 
-				// move the player
+				// move the players
 				server_player.move();
+				client_player.move();
 	
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
@@ -162,7 +160,6 @@ void* start(void* arg){
 						TimeStart = std::chrono::system_clock::now();
 					}
 					else{
-						// Create viewports for maze
 						// always render maze prior to everything
 						int i, j;
 						for (i = 0; i < SCREEN_HEIGHT / TILE_SIZE; i++){
@@ -175,10 +172,14 @@ void* start(void* arg){
 							}
 						}
 
-						// render the player
+						// render the players
 						server_playerTexture.setWidth(server_player.PLAYER_WIDTH);
 						server_playerTexture.setHeight(server_player.PLAYER_HEIGHT);
 						server_playerTexture.render(server_player.mPosX, server_player.mPosY);
+
+						client_playerTexture.setWidth(client_player.PLAYER_WIDTH);
+						client_playerTexture.setHeight(client_player.PLAYER_HEIGHT);
+						client_playerTexture.render(client_player.mPosX, client_player.mPosY);
 
 						// render timer
 						TimeEnd = std::chrono::system_clock::now();
@@ -191,9 +192,6 @@ void* start(void* arg){
 							TimeStr = stream.str();
 							cout<<TimeStr<<endl;
         					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25);
-
-							// Screen_Time.setWidth(3 *TILE_SIZE);
-							// Screen_Time.setHeight(TILE_SIZE);
         					Screen_Time.render(SCREEN_WIDTH - 6 * TILE_SIZE, SCREEN_HEIGHT - 2 * TILE_SIZE);
 							CountTime = CountTime - 1;
         					if(0>=CountTime){

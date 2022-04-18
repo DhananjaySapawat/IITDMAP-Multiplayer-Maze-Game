@@ -112,6 +112,7 @@ void* start(void* arg){
 
 				// move the player
 				client_player.move();
+				server_player.move();
 	
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
@@ -176,7 +177,11 @@ void* start(void* arg){
 						// render the player
 						client_playerTexture.setWidth(client_player.PLAYER_WIDTH);
 						client_playerTexture.setHeight(client_player.PLAYER_HEIGHT);
-						client_playerTexture.render(client_player.mPosX, server_player.mPosY);
+						client_playerTexture.render(client_player.mPosX, client_player.mPosY);
+
+						server_playerTexture.setWidth(server_player.PLAYER_WIDTH);
+						server_playerTexture.setHeight(server_player.PLAYER_HEIGHT);
+						server_playerTexture.render(server_player.mPosX, server_player.mPosY);
 
 						// Render Timer
 						TimeEnd = std::chrono::system_clock::now();
@@ -189,7 +194,7 @@ void* start(void* arg){
 							TimeStr = stream.str();
 							cout<<TimeStr<<endl;
         					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25);
-							Screen_Time.render(510,170);
+							Screen_Time.render(SCREEN_WIDTH - 6 * TILE_SIZE, SCREEN_HEIGHT - 2 * TILE_SIZE);
         					CountTime = CountTime - 1;
         					if(0>=CountTime){
         						GameOver = true;

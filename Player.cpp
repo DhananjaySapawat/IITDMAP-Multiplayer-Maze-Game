@@ -24,7 +24,7 @@ class Player{
         // SDL_Rect mCollider;
 
         //Initializes the variables
-        Player();
+        Player(int xTile, int yTile);
 
         //Takes key presses and adjusts the player's velocity
         void handleEvent( SDL_Event& e );
@@ -39,10 +39,10 @@ class Player{
         void render();
 };
 
-Player::Player(){
+Player::Player(int xTile, int yTile){
     //Initialize the offsets
-    mPosX = 3*TILE_SIZE;
-    mPosY = 2*TILE_SIZE;
+    mPosX = xTile*TILE_SIZE;
+    mPosY = yTile*TILE_SIZE;
 
     // mCollider.w = TILE_SIZE;
     // mCollider.h = TILE_SIZE;
