@@ -18,19 +18,16 @@
 #include "Player.cpp"
 using namespace std;
 
-extern int x,y,x2,y2,sx,sy,sh,sw,client,server,si;
-extern bool gamestart;
+extern int x,y,x2,y2,sx,sy,sh,sw,client,server,si,nm;
 extern bool gamepart[4];
-extern bool Player2;
-extern bool quit;
-extern bool getname;
-extern bool GameOver;
+extern bool Player2,gamestart,quit,getname,GameOver;
 double g = 0.1;
 double t = g;
-double GameTime = 20.00;
+double GameTime = 3.00;
+extern double MatchTime,CountTime;
 int startfontsize = 40;
 int array_sx[4][4] = {{490,155,235,75},{430,235,360,80},{380,315,500,80},{500,395,190,75}};
-extern string name,TimeStr;
+extern string IP_Address,TimeStr,name,name2;
 string myfont = "PublicPixel-0W5Kv.ttf";
 
 //The window we'll be rendering to
@@ -212,6 +209,7 @@ class Ltext
 		bool Text_init(string f , string t , SDL_Color color , int s);
 		void render( int x , int y);
 		void free();
+		bool mid = false;
 	private:
 		SDL_Surface* text;
 		SDL_Texture* text_texture;
@@ -238,11 +236,14 @@ bool Ltext::Text_init(string f, string t , SDL_Color color , int s){
 	return true;
 }
 
-void Ltext::render( int x , int y ){
-
+void Ltext::render( int x , int y){
+	if(mid){
+		x = (1200 - text->w)/2;
+	}
 	text_texture = SDL_CreateTextureFromSurface( gRenderer, text );
 
 	SDL_Rect dest = { x, y, text->w, text->h };
+
 
 	SDL_RenderCopy( gRenderer, text_texture , NULL , &dest );
 }
@@ -253,11 +254,9 @@ void Ltext::free(){
 }
 
 //Scene textures
-extern LTexture gstartscreen,gwaitscreen,gstartcontrol,gstartinstruction;
-
+extern LTexture gFooTexture,gFooTexture_2,gBackgroundTexture,gstartscreen,gwaitscreen,gstartcontrol,gstartinstruction;
 //Scene Text
-extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit,Screen_Wait1,Screen_Wait2,Screen_GetName,Screen_Time,Screen_Space;
-
+extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit,Screen_Wait1,Screen_Wait2,Screen_GetName,Screen_Time,Screen_Space,Screen_Winner,Screen_WinnerName;
 
 /*-----GLOBAL-TEXTURES-----*/
 
@@ -321,6 +320,12 @@ void* Server_Check(void* arg){
 		if(quit){
 			 exit(0);
 		}
+		if(gamestart){
+			string magname = "n"+name;
+			char* msg = &magname[0];
+			send(client,msg,sizeof(msg),0);
+			continue;
+		}
 		end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = end - start;
         if(elapsed_seconds.count() > t){
@@ -347,6 +352,12 @@ void* Client_Check(void* arg){
 	while(1){
 		if(quit){
 			 exit(0);
+		}
+		if(gamestart){
+			string magname = "n"+name;
+			char* msg = &magname[0];
+			send(server,msg,sizeof(msg),0);
+			continue;
 		}
 		end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = end - start;
@@ -418,6 +429,10 @@ void* Server_Recieve(void* arg){
     			char msg[] = "start";
 				send(client, msg , sizeof(msg) , 0 );
     		}
+    	}
+    	if(buffer[0] == 'n'){
+    		name2 = buffer;
+    		name2 = name2.substr(1);
     	}
     	if(buffer[0] == 'x'){
     		string s = buffer;
@@ -533,6 +548,10 @@ void* Client_Recieve(void* arg){
     			char msg[] = "start";
 				send(server, msg , sizeof(msg) , 0 );
     		}
+    	}
+    	if(buffer[0] == 'n'){
+    		name2 = buffer;
+    		name2 = name2.substr(1);
     	}
     	if(buffer[0] == 'x'){
     		string s = buffer;
@@ -674,7 +693,7 @@ bool loadMedia()
 {
 	//Loading success flag
 	bool success = true;
-	
+
 	//Load background texture and player texture
 	if (!mapTexture.loadFromFile("./data/tile.png", true) || !server_playerTexture.loadFromFile("./data/undertale.png", true) || !client_playerTexture.loadFromFile("./data/undertale.png", true)){
 	// if( !gBackgroundTexture.loadFromFile("background.png",true ) )
@@ -748,6 +767,10 @@ bool loadMedia()
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
+	if( !Screen_WinnerName.Text_init(myfont,"Win the Game",{255,255,255},25) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
 	//Load music
 	gMusic = Mix_LoadMUS( "beat.wav" );
 	if( gMusic == NULL )
@@ -798,7 +821,7 @@ void close(){
 	gstartscreen.free();
     gwaitscreen.free();
 
-	mapTexture.free();
+    mapTexture.free();
 	server_playerTexture.free();
 	client_playerTexture.free();
 
@@ -809,11 +832,11 @@ void close(){
 	Screen_Quit.free();
 
 	//timers
-	Screen_Wait1;
-	Screen_Wait2;
-	Screen_GetName;
-	Screen_Time;
-	Screen_Space;
+	Screen_Wait1.free();
+	Screen_Wait2.free();
+	Screen_GetName.free();
+	Screen_Time.free();
+	Screen_Space.free();
 
 	//Close game controller
     SDL_JoystickClose( gGameController );
@@ -983,6 +1006,10 @@ void Server_Keyboard_Handle(SDL_Event e){
 			gamestart = true;
 			Player2 = false;
 			GameOver = false;
+			MatchTime = GameTime;
+			CountTime = GameTime-1;
+			cout<<name<<endl;
+			cout<<name2<<endl;
 		}
 	}
 	else if(getname){
@@ -1193,6 +1220,10 @@ void Client_Keyboard_Handle(SDL_Event e){
 			gamestart = true;
 			Player2 = false;
 			GameOver = false;
+			MatchTime = GameTime;
+			CountTime = GameTime-1;
+			cout<<name<<endl;
+			cout<<name2<<endl;
 		}
 	}
 	else if(getname){
@@ -1408,9 +1439,11 @@ void Server_Connect(){
 	}
 	cout<<"Server Socket connection created"<<endl;
 
+	char*IP_Address_Array = &IP_Address[0];
+
 	Server_Address.sin_family = AF_INET;
 	Server_Address.sin_port = htons(Server_Port);
-    Server_Address.sin_addr.s_addr = inet_addr("127.0.0.1");
+    Server_Address.sin_addr.s_addr = inet_addr(IP_Address_Array);
 
     int Server_Address_Size = sizeof(Server_Address);
     int Server_Bind = bind(server,(struct sockaddr*)&Server_Address,Server_Address_Size);
@@ -1419,7 +1452,7 @@ void Server_Connect(){
 		exit ( EXIT_FAILURE);
 	}
 	cout<<"Server Socket Bind"<<endl;
-
+	
 	listen(server,3);
 	
 	client = accept(server, (struct sockaddr *)&Server_Address,(socklen_t*)&Server_Address_Size);
@@ -1428,6 +1461,7 @@ void Server_Connect(){
 		cout<<"Client not connect !"<<endl;
 		exit ( EXIT_FAILURE);
 	}
+	
 	cout<<"Client connected !"<<endl;
 }
 
@@ -1447,7 +1481,9 @@ void Client_Connect(){
 	Server_Address.sin_family = AF_INET;
 	Server_Address.sin_port = htons(Server_Port);
 
-	if(inet_pton(AF_INET, "127.0.0.1", &Server_Address.sin_addr)<=0) 
+	char*IP_Address_Array = &IP_Address[0];
+
+	if(inet_pton(AF_INET, IP_Address_Array, &Server_Address.sin_addr)<=0) 
     {
         printf("Invalid address/ Address not supported \n");
         exit ( EXIT_FAILURE);
@@ -1462,7 +1498,6 @@ void Client_Connect(){
 	}
 	cout<<"Client Server connected"<<endl;
 }
-
 void Keyboard_Get_Name(SDL_Event e , int c){
 	if(e.key.keysym.sym == 	SDLK_KP_ENTER or e.key.keysym.sym == SDLK_RETURN ){
 		if(name!=""){

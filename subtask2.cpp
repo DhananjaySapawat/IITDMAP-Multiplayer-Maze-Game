@@ -30,6 +30,9 @@ double CountTime = GameTime-1;
 
 //Player Name
 string name = "";
+string name2;
+
+string IP_Address;
 
 string TimeStr = to_string(GameTime);
 
@@ -58,6 +61,9 @@ Ltext Screen_Wait2;
 Ltext Screen_GetName;
 Ltext Screen_Time;
 Ltext Screen_Space;
+Ltext Screen_Winner;
+Ltext Screen_WinnerName;
+
 
 //Game Controller 1 handler
 SDL_Joystick* gGameController = NULL;
@@ -119,7 +125,12 @@ void* start(void* arg){
 
 				if(GameOver){
 					gstartscreen.render(0,0);
-					Screen_Space.render(180,160);
+					Screen_Space.mid = true;
+					Screen_WinnerName.mid = true;
+					Screen_Winner.mid = true;
+					Screen_Space.render(180,360);
+					Screen_WinnerName.render(460,200);
+					Screen_Winner.render(100,50);
 				}
 				else if(getname == true){
 					gstartscreen.render(0,0);
@@ -192,10 +203,11 @@ void* start(void* arg){
 							TimeStr = stream.str();
 							cout<<TimeStr<<endl;
         					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25);
-        					Screen_Time.render(SCREEN_WIDTH - 6 * TILE_SIZE, SCREEN_HEIGHT - 2 * TILE_SIZE);
-							CountTime = CountTime - 1;
+							Screen_Time.render(SCREEN_WIDTH - 6 * TILE_SIZE, SCREEN_HEIGHT - 2 * TILE_SIZE);
+        					CountTime = CountTime - 1;
         					if(0>=CountTime){
         						GameOver = true;
+        						Screen_Winner.Text_init(myfont,name,{255,255,255},85);
         					}
         				}
 					}
@@ -212,6 +224,7 @@ void* start(void* arg){
 }
 
 int main( int argc, char* args[] ){
+	IP_Address = "127.0.0.1";
 	Server_Connect();
     pthread_t Reciever,Server_Start,checker;
     pthread_create(&Reciever, NULL, &Server_Recieve, NULL);
