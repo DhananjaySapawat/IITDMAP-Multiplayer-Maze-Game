@@ -20,7 +20,7 @@ all :
 
 s : $(OBJS)
 	$(CC) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME) -pthread
-	./$(OBJ_NAME)
+	./$(OBJ_NAME)	127.0.0.1
 c : $(OBJS2)
 	$(CC) $(OBJS2) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME2) -pthread
-	./$(OBJ_NAME2)
+	./$(OBJ_NAME2)	127.0.0.1

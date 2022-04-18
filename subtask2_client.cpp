@@ -104,7 +104,7 @@ void* start(void* arg){
 					if( e.type == SDL_QUIT ){
 						quit = true;
 					}
-					if( e.type == SDL_KEYDOWN || e.type == SDL_KEYUP ){
+					if( e.type == SDL_KEYDOWN ){
 						Client_Keyboard_Handle(e);
 					}
 					if( e.type == SDL_JOYAXISMOTION ){
@@ -150,7 +150,7 @@ void* start(void* arg){
 						Screen_Quit.render(520,410);
 						for(int i = 0;i<5;i++){
 							SDL_Rect outlineRect = {sx-i,sy-i,sw+2*i,sh+2*i};
-                			SDL_SetRenderDrawColor( gRenderer, 0x00, 0xFF, 0x00, 0xFF );        
+                			SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );         
                 			SDL_RenderDrawRect( gRenderer, &outlineRect );
                 		}
                 	}
@@ -163,7 +163,7 @@ void* start(void* arg){
 						Screen_Wait1.render(180,160);
 						Screen_Wait2.render(425,260);
 						char msg[] = "start";
-						send(client, msg , sizeof(msg) , 0 );
+						send(server, msg , sizeof(msg) , 0 );
 						TimeStart = std::chrono::system_clock::now();
 					}
 					else{
@@ -224,7 +224,11 @@ void* start(void* arg){
 }
 
 int main( int argc, char* args[] ){
-	IP_Address = "127.0.0.1";
+	if(argc<2){
+         cout<<"Error : Give Atleast One Input <IP Address>"<<endl;
+         return -1;
+   	}
+   	IP_Address = args[1];
 	Client_Connect();
     pthread_t Reciever,Client_Start,checker;
     pthread_create(&Reciever, NULL, &Client_Recieve, NULL);

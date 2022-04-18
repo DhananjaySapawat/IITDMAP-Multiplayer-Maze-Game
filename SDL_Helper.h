@@ -401,34 +401,6 @@ void* Server_Recieve(void* arg){
     		y = Give_Value(s);
     		// cout<<buffer<<endl;
     	}
-    	
-    }
-    pthread_exit(NULL);
-}
-
-/*
-void* Server_Recieve(void* arg){
-	int buffer_size = 1024;
-	char buffer[buffer_size] = {0};
-	while(1){
-		int Client_Read;
-		Client_Read = read(client , buffer, buffer_size );
-    	if(buffer[0] == 'r'){
-    		x = x + 10;
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'l'){
-    		x = x - 10;
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'u'){
-    		y = y - 10;
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'd'){
-    		y = y + 10;
-    		//cout<<buffer<<endl;
-    	}
     	if(buffer[0] == 's'){
     		Player2 = true;
     		if(gamepart[0]){
@@ -436,21 +408,12 @@ void* Server_Recieve(void* arg){
 				send(client, msg , sizeof(msg) , 0 );
     		}
     	}
-    	if(buffer[0] == 'x'){
-    		string s = buffer;
-    		x = Give_Value(s);
-    		// cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'y'){
-    		string s = buffer;
-    		y = Give_Value(s);
-    		// cout<<buffer<<endl;
-    	}
     	
     }
     pthread_exit(NULL);
 }
-*/
+
+
 
 void* Client_Recieve(void* arg){
 	int buffer_size = 1024;
@@ -487,50 +450,6 @@ void* Client_Recieve(void* arg){
     pthread_exit(NULL);
 }
 
-/*
-void* Client_Recieve(void* arg){
-	int buffer_size = 1024;
-	char buffer[buffer_size] = {0};
-	while(1){
-		int Server_Read;
-		Server_Read = read(server , buffer, buffer_size );
-		if(buffer[0] == 'r'){
-    		x2 = x2 + 10;
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'l'){
-    		x2 = x2 - 10;
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'u'){
-    		y2 = y2 - 10;
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'd'){
-    		y2 = y2 + 10;
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 's'){
-    		Player2 = true;
-    		if(gamepart[0]){
-    			char msg[] = "start";
-				send(server, msg , sizeof(msg) , 0 );
-    		}
-    	}
-    	if(buffer[0] == 'x'){
-    		string s = buffer;
-    		x2 = Give_Value(s);
-    		// cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'y'){
-    		string s = buffer;
-    		y2 = Give_Value(s);
-    		// cout<<buffer<<endl;
-    	}
-    }
-    pthread_exit(NULL);
-}
-*/
 
 bool init()
 {
@@ -827,98 +746,6 @@ void Keyboard_Start_Screen(SDL_Event e , int c){
 	return ;
 }
 
-/*
-void Server_Keyboard_Handle(SDL_Event e){
-	if(gamestart){
-		Keyboard_Start_Screen(e, client);
-		return ;
-	}
-	switch(e.key.keysym.sym){
-                     
-		case SDLK_RIGHT:{
-			char msg[] = "right";
-			send(client, msg , sizeof(msg) , 0);
-			x2 = x2 + 10;
-			break;
-		}	
-
-		case SDLK_LEFT:{
-			char msg[] = "left";
-			send(client, msg , sizeof(msg) , 0);
-			x2 = x2 - 10;
-			break;
-		}
-
-		case SDLK_UP:{
-			char msg[] = "up";
-			send(client, msg , sizeof(msg) , 0);
-			y2 = y2 - 10;
-			break;
-		}
-
-		case SDLK_DOWN:{
-			char msg[] = "down";
-			send(client, msg , sizeof(msg) , 0 );
-			y2 = y2 + 10;
-			break;
-		}
-
-		//Play high sound effect
-    	case SDLK_1:{
-			Mix_PlayChannel( -1, gHigh, 0 );
-			break;
-		}
-                            
-    	//Play medium sound effect
-    	case SDLK_2:{
-			Mix_PlayChannel( -1, gMedium, 0 );
-			break;
-		}
-                            
-    	//Play low sound effect
-    	case SDLK_3:{
-			Mix_PlayChannel( -1, gLow, 0 );
-			break;
-		}
-                            
-    	//Play scratch sound effect
-    	case SDLK_4:{
-			Mix_PlayChannel( -1, gScratch, 0 );
-			break;
-		}
-
-    	case SDLK_9:{
-			//If there is no music playing
-			if( Mix_PlayingMusic() == 0 ){
-				//Play the music
-				Mix_PlayMusic( gMusic, -1 );
-			}
-			//If music is being played
-			else{
-				//If the music is paused
-				if( Mix_PausedMusic() == 1 ){
-					//Resume the music
-					Mix_ResumeMusic();
-				}
-				//If the music is playing
-				else{
-					//Pause the music
-					Mix_PauseMusic();
-				}
-			}
-			break;
-		}
-    
-		case SDLK_0:{
-			//Stop the music
-			Mix_HaltMusic();
-			break;
-		}
-    }
-    return;
-}
-*/
-
 void Server_Keyboard_Handle(SDL_Event e){
 	if(GameOver){
 		if(e.key.keysym.sym == SDLK_SPACE){
@@ -1025,106 +852,6 @@ void Server_Keyboard_Handle(SDL_Event e){
     return;
 }
 
-/*
-void Client_Keyboard_Handle(SDL_Event e){
-	if(gamestart){
-		Keyboard_Start_Screen(e,server);
-		return ;
-	}
-	switch(e.key.keysym.sym){
-                     
-		case SDLK_RIGHT:
-		{
-		char msg[] = "right";
-		send(server, msg , sizeof(msg) , 0 );
-		x = x + 10;
-		break;
-		}	
-
-		case SDLK_LEFT:
-		{
-		char msg[] = "left";
-		send(server, msg , sizeof(msg) , 0 );
-		x = x - 10;
-		break;
-		}
-
-		case SDLK_UP:
-		{
-		char msg[] = "up";
-		send(server, msg , sizeof(msg) , 0 );
-		y = y - 10;
-		break;
-		}
-
-		case SDLK_DOWN:
-		{
-		char msg[] = "down";
-		send(server, msg , sizeof(msg) , 0 );
-		y = y + 10;
-		break;
-		}
-
-		//Play high sound effect
-    	case SDLK_1:
-    	{
-    	Mix_PlayChannel( -1, gHigh, 0 );
-    	break;
-		}
-                            
-    	//Play medium sound effect
-    	case SDLK_2:
-    	{
-    	Mix_PlayChannel( -1, gMedium, 0 );
-    	break;
-		}
-                            
-    	//Play low sound effect
-    	case SDLK_3:
-    	{
-    	Mix_PlayChannel( -1, gLow, 0 );
-    	break;
-		}
-                            
-    	//Play scratch sound effect
-    	case SDLK_4:
-    	{
-    	Mix_PlayChannel( -1, gScratch, 0 );
-    	break;
-		}
-
-    	case SDLK_9:{
-    	//If there is no music playing
-		if( Mix_PlayingMusic() == 0 ){
-			//Play the music
-			Mix_PlayMusic( gMusic, -1 );
-		}
-		//If music is being played
-		else{
-			//If the music is paused
-			if( Mix_PausedMusic() == 1 ){
-				//Resume the music
-				Mix_ResumeMusic();
-       	    }
-			//If the music is playing
-			else{
-				//Pause the music
-				Mix_PauseMusic();
-			}
-		}
-		break;
-		}
-                            
-		case SDLK_0:
-		{
-		//Stop the music
-		Mix_HaltMusic();
-		break;
-		}
-    }
-    return ;
-}
-*/
 
 void Client_Keyboard_Handle(SDL_Event e){
 	if(GameOver){
@@ -1245,14 +972,14 @@ void Server_Gamepad_Handle(SDL_Event e){
             //Left of dead zone
             if( e.jaxis.value < -JOYSTICK_DEAD_ZONE ){
                 char msg[] = "left";
-		        send(client, msg , sizeof(msg) , 0 );
-		        x2 = x2 - 10;
+		       	send(client, msg , sizeof(msg) , 0);
+				server_player.move(msg);
             }
             //Right of dead zone
             else if( e.jaxis.value > JOYSTICK_DEAD_ZONE ){
                 char msg[] = "right";
-				send(client, msg , sizeof(msg) , 0 );
-				x2 = x2 + 10;
+				send(client, msg , sizeof(msg) , 0);
+				server_player.move(msg);
             }
         }
         //Y axis motion
@@ -1260,14 +987,14 @@ void Server_Gamepad_Handle(SDL_Event e){
             //Below of dead zone
             if( e.jaxis.value < -JOYSTICK_DEAD_ZONE ){
                 char msg[] = "up";
-	            send(client, msg , sizeof(msg) , 0 );
-	            y2 = y2 - 10;
+	            send(client, msg , sizeof(msg) , 0);
+				server_player.move(msg);
             }
             //Above of dead zone
             else if( e.jaxis.value > JOYSTICK_DEAD_ZONE ){
                 char msg[] = "down";
-			    send(client, msg , sizeof(msg) , 0 );
-				y2 = y2 + 10;
+			    send(client, msg , sizeof(msg) , 0);
+				server_player.move(msg);
             }
         }
     }
@@ -1282,13 +1009,13 @@ void Client_Gamepad_Handle(SDL_Event e){
             if( e.jaxis.value < -JOYSTICK_DEAD_ZONE ){
                 char msg[] = "left";
 		        send(server, msg , sizeof(msg) , 0 );
-		        x = x - 10;
+				client_player.move(msg);
             }
             //Right of dead zone
             else if( e.jaxis.value > JOYSTICK_DEAD_ZONE ){
                 char msg[] = "right";
 				send(server, msg , sizeof(msg) , 0 );
-				x = x + 10;
+				client_player.move(msg);
             }
         }
         //Y axis motion
@@ -1297,13 +1024,13 @@ void Client_Gamepad_Handle(SDL_Event e){
             if( e.jaxis.value < -JOYSTICK_DEAD_ZONE ){
                 char msg[] = "up";
 	            send(server, msg , sizeof(msg) , 0 );
-	            y = y - 10;
+				client_player.move(msg);
             }
             //Above of dead zone
             else if( e.jaxis.value > JOYSTICK_DEAD_ZONE ){
                 char msg[] = "down";
 			    send(server, msg , sizeof(msg) , 0 );
-				y = y + 10;
+				client_player.move(msg);
             }
         }
     }
@@ -1335,7 +1062,7 @@ void Mouse_Handle(SDL_Event e , int c){
 
 void Server_Connect(){
 	x = 240,y = 190,x2 = 360,y2 = 190;
-	sx = 500 ,sy = 205 , sw = 180 , sh = 80 , si = 0;
+	sx = array_sx[0][0] ,sy = array_sx[0][1], sw = array_sx[0][2],array_sx[0][3], si = 0;
 	struct sockaddr_in Server_Address;
 	char buffer[buffer_size] = {0};
 	server = socket ( AF_INET, SOCK_STREAM, 0);
@@ -1373,7 +1100,7 @@ void Server_Connect(){
 
 void Client_Connect(){
 	x = 240,y = 190,x2 = 360,y2 = 190;
-	sx = 500 ,sy = 205 , sw = 180 , sh = 80 ,si =0 ;
+	sx = array_sx[0][0] ,sy = array_sx[0][1], sw = array_sx[0][2],array_sx[0][3], si = 0;
  	struct sockaddr_in Server_Address;
 	char buffer[buffer_size] = {0};
 
