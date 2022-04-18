@@ -61,8 +61,8 @@ enum LButtonSprite{
 };
 
 //Players
-Player server_player(3,3);
-Player client_player(9,9);
+Player server_player(1,1);
+Player client_player(1,1);
 
 /*-----CLASS-----*/
 void Keyboard_Get_Name(SDL_Event e , int c);
