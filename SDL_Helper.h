@@ -14,21 +14,24 @@
 #include<pthread.h>
 #include<chrono>
 #include<climits>
-
 #include "constants.h"
 #include "Player.cpp"
 using namespace std;
 
-/*-----CONSTANTS & VARIABLES-----*/
-
-extern int x, y, x2, y2, sx, sy, sh, sw, client, server, si;
+extern int x,y,x2,y2,sx,sy,sh,sw,client,server,si;
 extern bool gamestart;
 extern bool gamepart[4];
 extern bool Player2;
 extern bool quit;
+extern bool getname;
+extern bool GameOver;
 double g = 0.1;
 double t = g;
-int array_sx[4][4] = {{490,205,200,80}, {430,285,320,80}, {370,365,440,80}, {500,445,190,80}};
+double GameTime = 20.00;
+int startfontsize = 40;
+int array_sx[4][4] = {{490,155,235,75},{430,235,360,80},{380,315,500,80},{500,395,190,75}};
+extern string name,TimeStr;
+string myfont = "PublicPixel-0W5Kv.ttf";
 
 //The window we'll be rendering to
 extern SDL_Window* gWindow ;
@@ -74,7 +77,7 @@ Player server_player;
 Player client_player;
 
 /*-----CLASS-----*/
-
+void Keyboard_Get_Name(SDL_Event e , int c);
 class LTexture
 {
 	public:
@@ -247,10 +250,8 @@ void Ltext::free(){
 
 //Scene textures
 extern LTexture gFooTexture,gFooTexture_2,gBackgroundTexture,gstartscreen,gwaitscreen,gstartcontrol,gstartinstruction;
-
 //Scene Text
-extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit;
-
+extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit,Screen_Wait1,Screen_Wait2,Screen_GetName,Screen_Time,Screen_Space;
 /*-----FUNCTIONS-----*/
 
 SDL_Texture* loadTexture(std::string path){
@@ -675,7 +676,11 @@ bool loadMedia()
 		printf( "Failed to load background texture image!\n" );
 		success = false;
 	}
-	
+	if( !gBackgroundTexture.loadFromFile("back.png",true ) )
+	{
+		printf( "Failed to load background texture image!\n" );
+		success = false;
+	}
 	if ( !gstartscreen.loadFromFile("back.png",true ) )
 	{
 		printf( "Failed to load background start image!\n" );
@@ -687,7 +692,6 @@ bool loadMedia()
 		printf( "Failed to load background start image!\n" );
 		success = false;
 	}
-	
 	if ( !gstartcontrol.loadFromFile("control.png",true ))
 	{
 		printf( "Failed to load background start image!\n" );
@@ -701,26 +705,46 @@ bool loadMedia()
 	}
 
 	//Load Text
-	if ( !Screen_Start.Text_init("PublicPixel-0W5Kv.ttf","Start",{255,255,255},80) )
+	if ( !Screen_Start.Text_init(myfont,"Start",{255,255,255},startfontsize ) )
 	{
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
 
-	if ( !Screen_Controls.Text_init("PublicPixel-0W5Kv.ttf","Controls",{255,255,255},80) )
+	if ( !Screen_Controls.Text_init(myfont,"Controls",{255,255,255},startfontsize ) )
 	{
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
 
-	if ( !Screen_Instructions.Text_init("PublicPixel-0W5Kv.ttf","Instructions",{255,255,255},80) )
+	if ( !Screen_Instructions.Text_init(myfont,"Instructions",{255,255,255},startfontsize ) )
 	{
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
 
-	if ( !Screen_Quit.Text_init("PublicPixel-0W5Kv.ttf","Quit",{255,255,255},80) )
+	if ( !Screen_Quit.Text_init(myfont,"Quit",{255,255,255},startfontsize ) )
 	{
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_Wait1.Text_init(myfont,"Waiting for other player ",{255,255,255},40) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_Wait2.Text_init(myfont,"to join......",{255,255,255},40) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_GetName.Text_init(myfont,"Enter Your Name: ",{255,255,255},25) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_Space.Text_init(myfont,"press Space to Continue...........",{255,255,255},25) ){
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
@@ -762,7 +786,6 @@ bool loadMedia()
 	}
 	return success;
 }
-
 void close()
 {
 	//Free loaded images
@@ -947,7 +970,19 @@ void Server_Keyboard_Handle(SDL_Event e){
 */
 
 void Server_Keyboard_Handle(SDL_Event e){
-	if(gamestart){
+	if(GameOver){
+		if(e.key.keysym.sym == SDLK_SPACE){
+			gamepart[0] = false;
+			gamestart = true;
+			Player2 = false;
+			GameOver = false;
+		}
+	}
+	else if(getname){
+		Keyboard_Get_Name(e,client);
+		return;
+	}
+	else if(gamestart){
 		Keyboard_Start_Screen(e, client);
 		return ;
 	}
@@ -1145,7 +1180,19 @@ void Client_Keyboard_Handle(SDL_Event e){
 */
 
 void Client_Keyboard_Handle(SDL_Event e){
-	if(gamestart){
+	if(GameOver){
+		if(e.key.keysym.sym == SDLK_SPACE){
+			gamepart[0] = false;
+			gamestart = true;
+			Player2 = false;
+			GameOver = false;
+		}
+	}
+	else if(getname){
+		Keyboard_Get_Name(e,server);
+		return;
+	}
+	else if(gamestart){
 		Keyboard_Start_Screen(e,server);
 		return ;
 	}
@@ -1407,4 +1454,152 @@ void Client_Connect(){
 		exit ( EXIT_FAILURE);
 	}
 	cout<<"Client Server connected"<<endl;
+}
+void Keyboard_Get_Name(SDL_Event e , int c){
+	if(e.key.keysym.sym == 	SDLK_KP_ENTER or e.key.keysym.sym == SDLK_RETURN ){
+		if(name!=""){
+			getname = false;
+			return;
+		}	
+	}
+	if(e.key.keysym.sym == 	SDLK_BACKSPACE and (name.size()>0)){
+		name.pop_back();
+	}
+	switch(e.key.keysym.sym){
+                     
+		case SDLK_a:
+		{
+			name = name + "a";
+			break;
+		}
+		case SDLK_b:
+		{
+			name = name + "b";
+			break;
+		}
+		case SDLK_c:
+		{
+			name = name + "c";
+			break;
+		}
+		case SDLK_d:
+		{
+			name = name + "d";
+			break;
+		}
+		case SDLK_e:
+		{
+			name = name + "e";
+			break;
+		}
+		case SDLK_f:
+		{
+			name = name + "f";
+			break;
+		}
+		case SDLK_g:
+		{
+			name = name + "g";
+			break;
+		}
+		case SDLK_h:
+		{
+			name = name + "h";
+			break;
+		}
+		case SDLK_i:
+		{
+			name = name + "i";
+			break;
+		}
+		case SDLK_j:
+		{
+			name = name + "j";
+			break;
+		}
+		case SDLK_k:
+		{
+			name = name + "k";
+			break;
+		}
+		case SDLK_l:
+		{
+			name = name + "l";
+			break;
+		}
+		case SDLK_m:
+		{
+			name = name + "m";
+			break;
+		}
+		case SDLK_n:
+		{
+			name = name + "n";
+			break;
+		}
+		case SDLK_o:
+		{
+			name = name + "o";
+			break;
+		}
+		case SDLK_p:
+		{
+			name = name + "p";
+			break;
+		}
+		case SDLK_q:
+		{
+			name = name + "q";
+			break;
+		}
+		case SDLK_r:
+		{
+			name = name + "r";
+			break;
+		}
+		case SDLK_s:
+		{
+			name = name + "s";
+			break;
+		}
+		case SDLK_t:
+		{
+			name = name + "t";
+			break;
+		}
+		case SDLK_w:
+		{
+			name = name + "w";
+			break;
+		}
+		case SDLK_u:
+		{
+			name = name + "u";
+			break;
+		}
+		case SDLK_v:
+		{
+			name = name + "v";
+			break;
+		}
+		case SDLK_x:
+		{
+			name = name + "x";
+			break;
+		}
+		case SDLK_y:
+		{
+			name = name + "y";
+			break;
+		}
+		case SDLK_z:
+		{
+			name = name + "z";
+			break;
+		}
+
+	}
+	name[0] = toupper(name[0]);
+	Screen_GetName.Text_init(myfont,"Enter Your Name: "+name,{255,255,255},25) ;
+
 }
