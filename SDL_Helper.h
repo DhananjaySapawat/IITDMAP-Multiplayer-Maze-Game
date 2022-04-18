@@ -14,13 +14,14 @@
 #include<pthread.h>
 #include<chrono>
 #include<climits>
-#include "constants.h"
-#include "Player.cpp"
+#include"constants.h"
+#include"Player.cpp"
 using namespace std;
 
 extern int x,y,x2,y2,sx,sy,sh,sw,client,server,si,nm;
 extern bool gamepart[4];
 extern bool Player2,gamestart,quit,getname,GameOver;
+bool backhover = false;
 double g = 0.1;
 double t = g;
 double GameTime = 120.00;
@@ -65,8 +66,28 @@ Player server_player(1,1);
 Player client_player(1,1);
 
 /*-----CLASS-----*/
+
+void Keyboard_Start_Screen(SDL_Event e , int c);
 void Keyboard_Get_Name(SDL_Event e , int c);
 
+bool checkback(int a ,int b){
+	if(a >= 990 and a<=1145 and b>=25 and b<=90){
+			return true;
+	}
+	return false;
+}
+int check(int a ,int b){
+	for(int i = 0;i<4;i++){
+		if(a >= array_sx[i][0] and a<=array_sx[i][0]+array_sx[i][2] and b>=array_sx[i][1] and b<=array_sx[i][1]+array_sx[i][3]){
+			return i;
+		}
+	}
+	return -1;
+}
+int Give_Value(string s){
+	int a = stoi(s.substr(1));
+	return a;
+}
 class LTexture
 {
 	public:
@@ -219,7 +240,6 @@ class Ltext
 
 bool Ltext::Text_init(string f, string t , SDL_Color color , int s){
 
-	// string fon = "/usr/share/fonts/truetype/"+f;
 	const char *fc = f.c_str();
 	font = TTF_OpenFont(fc, s);
 	if (font == NULL) {
@@ -254,9 +274,11 @@ void Ltext::free(){
 }
 
 //Scene textures
-extern LTexture gFooTexture,gFooTexture_2,gBackgroundTexture,gstartscreen,gwaitscreen,gstartcontrol,gstartinstruction;
+extern LTexture gstartscreen,gstartcontrol,gstartinstruction;
 //Scene Text
-extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit,Screen_Wait1,Screen_Wait2,Screen_GetName,Screen_Time,Screen_Space,Screen_Winner,Screen_WinnerName;
+extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit,Screen_Wait1,Screen_Wait2;
+extern Ltext Screen_GetName,Screen_Time,Screen_Space,Screen_Winner,Screen_WinnerName;
+extern Ltext Screen_Back,Screen_Keyboard,Screen_Gamepad;
 
 /*-----GLOBAL-TEXTURES-----*/
 
@@ -295,20 +317,6 @@ SDL_Texture* loadTexture(std::string path){
 	}
     // return newTexture
 	return newTexture;
-}
-
-int check(int a ,int b){
-	for(int i = 0;i<4;i++){
-		if(a >= array_sx[i][0] and a<=array_sx[i][0]+array_sx[i][2] and b>=array_sx[i][1] and b<=array_sx[i][1]+array_sx[i][3]){
-			return i;
-		}
-	}
-	return -1;
-}
-
-int Give_Value(string s){
-	int a = stoi(s.substr(1));
-	return a;
 }
 
 void* Server_Check(void* arg){
@@ -534,29 +542,24 @@ bool loadMedia()
 	bool success = true;
 
 	//Load background texture and player texture
-	if (!mapTexture.loadFromFile("./data/tile.png", true) || !server_playerTexture.loadFromFile("./data/undertale.png", true) || !client_playerTexture.loadFromFile("./data/undertale.png", true)){
+	if (!mapTexture.loadFromFile("Image/tile.png", true) || !server_playerTexture.loadFromFile("Image/undertale.png", true) || !client_playerTexture.loadFromFile("Image/undertale.png", true)){
 	// if( !gBackgroundTexture.loadFromFile("background.png",true ) )
 		printf( "Failed to load background texture image!\n" );
 		success = false;
 	}
-	if ( !gstartscreen.loadFromFile("./data/back.png",true ) )
+	if ( !gstartscreen.loadFromFile("Image/back.png",true ) )
 	{
 		printf( "Failed to load background start image!\n" );
 		success = false;
 	}
 	
-	if ( !gwaitscreen.loadFromFile("wait.png",true ) )
-	{
-		printf( "Failed to load background start image!\n" );
-		success = false;
-	}
-	if ( !gstartcontrol.loadFromFile("control.png",true ))
+	if ( !gstartcontrol.loadFromFile("Image/con.png",true ))
 	{
 		printf( "Failed to load background start image!\n" );
 		success = false;
 	}
 
-	if ( !gstartinstruction.loadFromFile("ins.png",true ))
+	if ( !gstartinstruction.loadFromFile("Image/ins.png",true ))
 	{
 		printf( "Failed to load background start image!\n" );
 		success = false;
@@ -610,8 +613,20 @@ bool loadMedia()
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
+	if( !Screen_Back.Text_init(myfont,"Back",{255,255,255},30) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_Keyboard.Text_init(myfont,"Keyboard",{255,255,255},40) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_Gamepad.Text_init(myfont,"Gamepad",{255,255,255},40) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
 	//Load music
-	gMusic = Mix_LoadMUS( "scratch.wav" );
+	gMusic = Mix_LoadMUS( "Audio/scratch.wav" );
 	if( gMusic == NULL )
 	{
 		printf( "Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError() );
@@ -619,28 +634,28 @@ bool loadMedia()
 	}
 	
 	//Load sound effects
-	gScratch = Mix_LoadWAV( "scratch.wav" );
+	gScratch = Mix_LoadWAV( "Audio/scratch.wav" );
 	if( gScratch == NULL )
 	{
 		printf( "Failed to load scratch sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
 		success = false;
 	}
 	
-	gHigh = Mix_LoadWAV( "high.wav" );
+	gHigh = Mix_LoadWAV( "Audio/high.wav" );
 	if( gHigh == NULL )
 	{
 		printf( "Failed to load high sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
 		success = false;
 	}
 
-	gMedium = Mix_LoadWAV( "medium.wav" );
+	gMedium = Mix_LoadWAV( "Audio/medium.wav" );
 	if( gMedium == NULL )
 	{
 		printf( "Failed to load medium sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
 		success = false;
 	}
 
-	gLow = Mix_LoadWAV( "low.wav" );
+	gLow = Mix_LoadWAV( "Audio/low.wav" );
 	if( gLow == NULL )
 	{
 		printf( "Failed to load low sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
@@ -651,14 +666,12 @@ bool loadMedia()
 
 void close(){
 	gstartscreen;
-	gwaitscreen;
 	gstartcontrol;
 	gstartinstruction;
 
 	//Free loaded images
 	// gBackgroundTexture.free();
 	gstartscreen.free();
-    gwaitscreen.free();
 
     mapTexture.free();
 	server_playerTexture.free();
@@ -707,43 +720,102 @@ void close(){
     SDL_Quit();
 }
 
-void Keyboard_Start_Screen(SDL_Event e , int c){
-	if(gamepart[1]){
-		if(e.key.keysym.sym == 	SDLK_BACKSPACE){
-			gamepart[1] = false;
-		}
+void Server_Connect(){
+	x = 240,y = 190,x2 = 360,y2 = 190;
+	sx = array_sx[0][0] ,sy = array_sx[0][1], sw = array_sx[0][2],array_sx[0][3], si = 0;
+	struct sockaddr_in Server_Address;
+	char buffer[buffer_size] = {0};
+	server = socket ( AF_INET, SOCK_STREAM, 0);
+	if (server < 0){
+		cout<<"Opening of Socket Failed !"<<endl;
+		exit ( EXIT_FAILURE);
+	}
+	cout<<"Server Socket connection created"<<endl;
+
+	char*IP_Address_Array = &IP_Address[0];
+
+	Server_Address.sin_family = AF_INET;
+	Server_Address.sin_port = htons(Server_Port);
+    Server_Address.sin_addr.s_addr = inet_addr(IP_Address_Array);
+
+    int Server_Address_Size = sizeof(Server_Address);
+    int Server_Bind = bind(server,(struct sockaddr*)&Server_Address,Server_Address_Size);
+    if(Server_Bind < 0){
+		cout<<"Socket Binding Failed !"<<endl;
+		exit ( EXIT_FAILURE);
+	}
+	cout<<"Server Socket Bind"<<endl;
+	listen(server,3);
+	
+	client = accept(server, (struct sockaddr *)&Server_Address,(socklen_t*)&Server_Address_Size);
+
+	if(client < 0){
+		cout<<"Client not connect !"<<endl;
+		exit ( EXIT_FAILURE);
+	}
+	cout<<"Client connected !"<<endl;
+}
+
+void Client_Connect(){
+	x = 240,y = 190,x2 = 360,y2 = 190;
+	sx = array_sx[0][0] ,sy = array_sx[0][1], sw = array_sx[0][2],array_sx[0][3], si = 0;
+ 	struct sockaddr_in Server_Address;
+	char buffer[buffer_size] = {0};
+
+	server = socket ( AF_INET, SOCK_STREAM, 0);
+	if (server < 0){
+		cout<<"Opening of Socket Failed !"<<endl;
+		exit ( EXIT_FAILURE);
+	}
+	cout<<"Client Socket created"<<endl;
+
+	Server_Address.sin_family = AF_INET;
+	Server_Address.sin_port = htons(Server_Port);
+
+	char*IP_Address_Array = &IP_Address[0];
+
+	if(inet_pton(AF_INET, IP_Address_Array, &Server_Address.sin_addr)<=0) 
+    {
+        printf("Invalid address/ Address not supported \n");
+        exit ( EXIT_FAILURE);
+    }
+    
+    int Server_Address_Size = sizeof(Server_Address);
+	int Server_Connector = connect(server, (struct sockaddr *)&Server_Address, Server_Address_Size);
+
+	if (Server_Connector < 0){
+		cout<<"Client connection Failed !"<<endl;
+		exit ( EXIT_FAILURE);
+	}
+	cout<<"Client Server connected"<<endl;
+}
+void Mouse_Handle(SDL_Event e , int c){
+	//Get mouse position
+	int mx, my;
+	SDL_GetMouseState(&mx,&my);
+	if(e.type == SDL_MOUSEBUTTONDOWN and gamepart[1] == true){
+		gamepart[1] = false;
 		return;
 	}
-	if(gamepart[2]){
-		if(e.key.keysym.sym == 	SDLK_BACKSPACE){
-			gamepart[2] = false;
-		}
-		return;
-	}
-	if(e.key.keysym.sym == 	SDLK_KP_ENTER or e.key.keysym.sym == SDLK_RETURN){
-		if(si == 0){
+	int p = check(mx,my);
+	if(e.type == SDL_MOUSEBUTTONDOWN ){
+		if(p == 0){
 			gamestart = false;
-			char msg[] = "start";
-			send(c, msg , sizeof(msg) , 0 );
+			gamepart[0] = true;
 		}
-		gamepart[si] = true;
-		return;
-	}                  
-	else if(e.key.keysym.sym == SDLK_UP){
-		if(si != 0){
-			si--;
+		else if (p!=-1){
+			gamepart[p] = true;
 		}
 	}
-	else if(e.key.keysym.sym == SDLK_DOWN){
-		if(si != 3){
-			si++;
+	else{
+		if(p!=-1){
+			sx = array_sx[p][0];
+			sy = array_sx[p][1];
+			sw = array_sx[p][2];
+			sh = array_sx[p][3];
 		}
 	}
-	sx = array_sx[si][0];
-	sy = array_sx[si][1];
-	sw = array_sx[si][2];
-	sh = array_sx[si][3];
-	return ;
+	return;
 }
 
 void Server_Keyboard_Handle(SDL_Event e){
@@ -1035,101 +1107,43 @@ void Client_Gamepad_Handle(SDL_Event e){
         }
     }
 }
-
-void Mouse_Handle(SDL_Event e , int c){
-	//Get mouse position
-	int mx, my;
-	SDL_GetMouseState(&mx,&my);
-	int p = check(mx,my);
-	if(e.type == SDL_MOUSEBUTTONDOWN ){
-		if(p == 0){
+void Keyboard_Start_Screen(SDL_Event e , int c){
+	if(gamepart[1]){
+		if(e.key.keysym.sym == 	SDLK_BACKSPACE){
+			gamepart[1] = false;
+		}
+		return;
+	}
+	if(gamepart[2]){
+		if(e.key.keysym.sym == 	SDLK_BACKSPACE){
+			gamepart[2] = false;
+		}
+		return;
+	}
+	if(e.key.keysym.sym == 	SDLK_KP_ENTER or e.key.keysym.sym == SDLK_RETURN){
+		if(si == 0){
 			gamestart = false;
-			gamepart[0] = true;
+			char msg[] = "start";
+			send(c, msg , sizeof(msg) , 0 );
 		}
-		else if (p!=-1){
-			gamepart[p] = true;
-		}
-	}
-	else{
-		if(p!=-1){
-			sx = array_sx[p][0];
-			sy = array_sx[p][1];
-			sw = array_sx[p][2];
-			sh = array_sx[p][3];
+		gamepart[si] = true;
+		return;
+	}                  
+	else if(e.key.keysym.sym == SDLK_UP){
+		if(si != 0){
+			si--;
 		}
 	}
-}
-
-void Server_Connect(){
-	x = 240,y = 190,x2 = 360,y2 = 190;
-	sx = array_sx[0][0] ,sy = array_sx[0][1], sw = array_sx[0][2],array_sx[0][3], si = 0;
-	struct sockaddr_in Server_Address;
-	char buffer[buffer_size] = {0};
-	server = socket ( AF_INET, SOCK_STREAM, 0);
-	if (server < 0){
-		cout<<"Opening of Socket Failed !"<<endl;
-		exit ( EXIT_FAILURE);
+	else if(e.key.keysym.sym == SDLK_DOWN){
+		if(si != 3){
+			si++;
+		}
 	}
-	cout<<"Server Socket connection created"<<endl;
-
-	char*IP_Address_Array = &IP_Address[0];
-
-	Server_Address.sin_family = AF_INET;
-	Server_Address.sin_port = htons(Server_Port);
-    Server_Address.sin_addr.s_addr = inet_addr(IP_Address_Array);
-
-    int Server_Address_Size = sizeof(Server_Address);
-    int Server_Bind = bind(server,(struct sockaddr*)&Server_Address,Server_Address_Size);
-    if(Server_Bind < 0){
-		cout<<"Socket Binding Failed !"<<endl;
-		exit ( EXIT_FAILURE);
-	}
-	cout<<"Server Socket Bind"<<endl;
-	
-	listen(server,3);
-	
-	client = accept(server, (struct sockaddr *)&Server_Address,(socklen_t*)&Server_Address_Size);
-
-	if(client < 0){
-		cout<<"Client not connect !"<<endl;
-		exit ( EXIT_FAILURE);
-	}
-	
-	cout<<"Client connected !"<<endl;
-}
-
-void Client_Connect(){
-	x = 240,y = 190,x2 = 360,y2 = 190;
-	sx = array_sx[0][0] ,sy = array_sx[0][1], sw = array_sx[0][2],array_sx[0][3], si = 0;
- 	struct sockaddr_in Server_Address;
-	char buffer[buffer_size] = {0};
-
-	server = socket ( AF_INET, SOCK_STREAM, 0);
-	if (server < 0){
-		cout<<"Opening of Socket Failed !"<<endl;
-		exit ( EXIT_FAILURE);
-	}
-	cout<<"Client Socket created"<<endl;
-
-	Server_Address.sin_family = AF_INET;
-	Server_Address.sin_port = htons(Server_Port);
-
-	char*IP_Address_Array = &IP_Address[0];
-
-	if(inet_pton(AF_INET, IP_Address_Array, &Server_Address.sin_addr)<=0) 
-    {
-        printf("Invalid address/ Address not supported \n");
-        exit ( EXIT_FAILURE);
-    }
-    
-    int Server_Address_Size = sizeof(Server_Address);
-	int Server_Connector = connect(server, (struct sockaddr *)&Server_Address, Server_Address_Size);
-
-	if (Server_Connector < 0){
-		cout<<"Client connection Failed !"<<endl;
-		exit ( EXIT_FAILURE);
-	}
-	cout<<"Client Server connected"<<endl;
+	sx = array_sx[si][0];
+	sy = array_sx[si][1];
+	sw = array_sx[si][2];
+	sh = array_sx[si][3];
+	return ;
 }
 void Keyboard_Get_Name(SDL_Event e , int c){
 	if(e.key.keysym.sym == 	SDLK_KP_ENTER or e.key.keysym.sym == SDLK_RETURN ){

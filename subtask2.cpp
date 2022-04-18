@@ -15,7 +15,6 @@
 #include<chrono>
 #include<iomanip>
 #include<sstream>
-
 #include"SDL_Helper.h"
 using namespace std;
 
@@ -42,12 +41,7 @@ SDL_Window* gWindow = NULL;
 // The window renderer
 SDL_Renderer* gRenderer = NULL;
 
-//Scene textures
-// LTexture gFooTexture;
-// LTexture gFooTexture_2;
-// LTexture gBackgroundTexture;
 LTexture gstartscreen;
-LTexture gwaitscreen;
 LTexture gstartcontrol;
 LTexture gstartinstruction;
 
@@ -63,6 +57,10 @@ Ltext Screen_Time;
 Ltext Screen_Space;
 Ltext Screen_Winner;
 Ltext Screen_WinnerName;
+Ltext Screen_Back;
+Ltext Screen_Keyboard;
+Ltext Screen_Gamepad;
+
 
 
 //Game Controller 1 handler
@@ -104,7 +102,7 @@ void* start(void* arg){
 					if( e.type == SDL_QUIT ){
 						quit = true;
 					}
-					if( e.type == SDL_KEYDOWN ){
+					if( e.type == SDL_KEYDOWN and e.key.repeat == 0 ){
 						Server_Keyboard_Handle(e);
 					}
 					if( e.type == SDL_JOYAXISMOTION ){
@@ -135,6 +133,14 @@ void* start(void* arg){
 				else if(gamestart == true ){
 					if(gamepart[1] == true){
 						gstartcontrol.render(0,0);
+						Screen_Back.render(1010,40);
+						Screen_Keyboard.render(140,150);
+						Screen_Gamepad.render(680,150);
+						for(int i = 0;i<5;i++){
+							SDL_Rect outlineRect = {990-i,25-i,155+2*i,65+2*i};
+                			SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );        
+                			SDL_RenderDrawRect( gRenderer, &outlineRect );
+                		}
 					}
 					else if (gamepart[2] == true){
 						gstartinstruction.render(0,0);
