@@ -198,6 +198,9 @@ void* start(void* arg){
         				MatchTime = GameTime - elapsed_seconds.count();
         				//cout<<MatchTime<<" "<<CountTime<<endl;
         				if(MatchTime <= CountTime){
+						if(CountTime == GameTime-1){
+        						Mix_PlayMusic( gMusic, -1 );
+        					}
         					std::stringstream stream;
 							stream << std::fixed << std::setprecision(1) << CountTime;
 							TimeStr = stream.str();
@@ -208,6 +211,7 @@ void* start(void* arg){
         					if(0>=CountTime){
         						GameOver = true;
         						Screen_Winner.Text_init(myfont,name,{255,255,255},25);
+							Mix_PauseMusic();
         					}
         				}
 							}
