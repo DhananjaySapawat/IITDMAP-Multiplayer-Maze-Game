@@ -23,7 +23,7 @@ extern bool gamepart[4];
 extern bool Player2,gamestart,quit,getname,GameOver;
 double g = 0.1;
 double t = g;
-double GameTime = 3.00;
+double GameTime = 120.00;
 extern double MatchTime,CountTime;
 int startfontsize = 40;
 int array_sx[4][4] = {{490,155,235,75},{430,235,360,80},{380,315,500,80},{500,395,190,75}};
@@ -383,52 +383,9 @@ void* Server_Recieve(void* arg){
 	while(1){
 		int Client_Read;
 		Client_Read = read(client , buffer, buffer_size );
-    	if(buffer[0] == 'r'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYDOWN;
-			sdlevent.key.keysym.sym = SDLK_RIGHT;
-			SDL_PushEvent(&sdlevent);
-    		client_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'l'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYDOWN;
-			sdlevent.key.keysym.sym = SDLK_LEFT;
-			SDL_PushEvent(&sdlevent);
-    		client_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'u'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYDOWN;
-			sdlevent.key.keysym.sym = SDLK_UP;
-			SDL_PushEvent(&sdlevent);
-    		client_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'd'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYDOWN;
-			sdlevent.key.keysym.sym = SDLK_DOWN;
-			SDL_PushEvent(&sdlevent);
-    		client_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-		if(buffer[0] == 'h'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYUP;
-			// sdlevent.key.keysym.sym = SDLK_RIGHT;
-			SDL_PushEvent(&sdlevent);
-    		client_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 's'){
-    		Player2 = true;
-    		if(gamepart[0]){
-    			char msg[] = "start";
-				send(client, msg , sizeof(msg) , 0 );
-    		}
+    	
+		if(buffer[0] == 'l' || buffer[0] == 'r' || buffer[0] == 'u' || buffer[0] == 'd'){
+    		client_player.move(buffer);
     	}
     	if(buffer[0] == 'n'){
     		name2 = buffer;
@@ -502,45 +459,8 @@ void* Client_Recieve(void* arg){
 	while(1){
 		int Server_Read;
 		Server_Read = read(server , buffer, buffer_size );
-		if(buffer[0] == 'r'){
-			SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYDOWN;
-			sdlevent.key.keysym.sym = SDLK_RIGHT;
-			SDL_PushEvent(&sdlevent);
-    		server_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'l'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYDOWN;
-			sdlevent.key.keysym.sym = SDLK_LEFT;
-			SDL_PushEvent(&sdlevent);
-    		server_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'u'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYDOWN;
-			sdlevent.key.keysym.sym = SDLK_UP;
-			SDL_PushEvent(&sdlevent);
-    		server_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-    	if(buffer[0] == 'd'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYDOWN;
-			sdlevent.key.keysym.sym = SDLK_DOWN;
-			SDL_PushEvent(&sdlevent);
-    		server_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
-    	}
-		if(buffer[0] == 'h'){
-    		SDL_Event sdlevent = {};
-			sdlevent.type = SDL_KEYUP;
-			// sdlevent.key.keysym.sym = SDLK_DOWN;
-			SDL_PushEvent(&sdlevent);
-    		server_player.handleEvent(sdlevent);
-    		//cout<<buffer<<endl;
+		if(buffer[0] == 'r' || buffer[0] == 'l' || buffer[0] == 'u' || buffer[0] == 'd'){
+    		server_player.move(buffer);
     	}
     	if(buffer[0] == 's'){
     		Player2 = true;
@@ -772,7 +692,7 @@ bool loadMedia()
 		success = false;
 	}
 	//Load music
-	gMusic = Mix_LoadMUS( "backgroundmusic.wav" );
+	gMusic = Mix_LoadMUS( "scratch.wav" );
 	if( gMusic == NULL )
 	{
 		printf( "Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError() );
@@ -1025,35 +945,28 @@ void Server_Keyboard_Handle(SDL_Event e){
 		case SDLK_RIGHT:{
 			char msg[] = "right";
 			send(client, msg , sizeof(msg) , 0);
-			server_player.handleEvent(e);
+			server_player.move(msg);
 			break;
 		}	
 
 		case SDLK_LEFT:{
 			char msg[] = "left";
 			send(client, msg , sizeof(msg) , 0);
-			server_player.handleEvent(e);
+			server_player.move(msg);
 			break;
 		}
 
 		case SDLK_UP:{
 			char msg[] = "up";
 			send(client, msg , sizeof(msg) , 0);
-			server_player.handleEvent(e);
+			server_player.move(msg);
 			break;
 		}
 
 		case SDLK_DOWN:{
 			char msg[] = "down";
 			send(client, msg , sizeof(msg) , 0 );
-			server_player.handleEvent(e);
-			break;
-		}
-
-		case SDL_KEYUP:{
-			char msg[] = "halt";
-			send(client, msg , sizeof(msg) , 0 );
-			server_player.handleEvent(e);
+			server_player.move(msg);
 			break;
 		}
 
@@ -1239,35 +1152,28 @@ void Client_Keyboard_Handle(SDL_Event e){
 		case SDLK_RIGHT:{
 			char msg[] = "right";
 			send(server, msg , sizeof(msg) , 0 );
-			client_player.handleEvent(e);
+			client_player.move(msg);
 			break;
 		}	
 
 		case SDLK_LEFT:{
 			char msg[] = "left";
 			send(server, msg , sizeof(msg) , 0 );
-			client_player.handleEvent(e);
+			client_player.move(msg);
 			break;
 		}
 
 		case SDLK_UP:{
 			char msg[] = "up";
 			send(server, msg , sizeof(msg) , 0 );
-			client_player.handleEvent(e);
+			client_player.move(msg);
 			break;
 		}
 
 		case SDLK_DOWN:{
 			char msg[] = "down";
 			send(server, msg , sizeof(msg) , 0 );
-			client_player.handleEvent(e);
-			break;
-		}
-
-		case SDL_KEYUP:{
-			char msg[] = "stop";
-			send(server, msg , sizeof(msg) , 0 );
-			client_player.handleEvent(e);
+			client_player.move(msg);
 			break;
 		}
 

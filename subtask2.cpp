@@ -114,10 +114,6 @@ void* start(void* arg){
 						Mouse_Handle(e,client);
 					}
 				}
-
-				// move the players
-				server_player.move();
-				client_player.move();
 	
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
