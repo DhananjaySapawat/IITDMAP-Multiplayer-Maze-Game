@@ -653,35 +653,18 @@ bool loadMedia()
 {
 	//Loading success flag
 	bool success = true;
-
-	//Load Foo' texture
-	if( !gFooTexture.loadFromFile("./data/undertale.png",false ) )
-	{
-		printf( "Failed to load Foo' texture image!\n" );
-		success = false;
-	}
-	
-	if( !gFooTexture_2.loadFromFile("./data/undertale.png",false ) )
-	{
-		printf( "Failed to load Foo' texture image!\n" );
-		success = false;
-	}
 	
 	//Load background texture and player texture
 	mapTexture = loadTexture("./data/tile.png");
 	server_playerTexture = loadTexture("./data/undertale.png");
 	client_playerTexture = loadTexture("./data/undertale.png");
+	
 	if (mapTexture == NULL || server_playerTexture == NULL || client_playerTexture == NULL){
 	// if( !gBackgroundTexture.loadFromFile("background.png",true ) )
 		printf( "Failed to load background texture image!\n" );
 		success = false;
 	}
-	if( !gBackgroundTexture.loadFromFile("back.png",true ) )
-	{
-		printf( "Failed to load background texture image!\n" );
-		success = false;
-	}
-	if ( !gstartscreen.loadFromFile("back.png",true ) )
+	if ( !gstartscreen.loadFromFile("./data/back.png",true ) )
 	{
 		printf( "Failed to load background start image!\n" );
 		success = false;
@@ -786,10 +769,14 @@ bool loadMedia()
 	}
 	return success;
 }
-void close()
-{
+
+void close(){
+	gstartscreen;
+	gwaitscreen;
+	gstartcontrol;
+	gstartinstruction;
+
 	//Free loaded images
-	gFooTexture.free();
 	// gBackgroundTexture.free();
 	gstartscreen.free();
     gwaitscreen.free();
@@ -807,6 +794,12 @@ void close()
 	Screen_Instructions.free();
 	Screen_Quit.free();
 
+	//timers
+	Screen_Wait1;
+	Screen_Wait2;
+	Screen_GetName;
+	Screen_Time;
+	Screen_Space;
 
 	//Close game controller
     SDL_JoystickClose( gGameController );
@@ -1455,6 +1448,7 @@ void Client_Connect(){
 	}
 	cout<<"Client Server connected"<<endl;
 }
+
 void Keyboard_Get_Name(SDL_Event e , int c){
 	if(e.key.keysym.sym == 	SDLK_KP_ENTER or e.key.keysym.sym == SDLK_RETURN ){
 		if(name!=""){

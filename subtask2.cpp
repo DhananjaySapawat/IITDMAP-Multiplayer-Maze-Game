@@ -12,11 +12,13 @@
 #include<unistd.h>
 #include<netdb.h>
 #include<pthread.h>
-#include"SDL_Helper.h"
 #include<chrono>
 #include<iomanip>
 #include<sstream>
+
+#include"SDL_Helper.h"
 using namespace std;
+
 int x,y,x2,y2,sx,sy,sh,sw,client,server,si;
 double MatchTime = GameTime;
 bool getname = true;
@@ -26,24 +28,21 @@ bool Player2 = false;
 bool GameOver = false;
 double CountTime = GameTime-1;
 
-//Main loop flag
-bool quit = false;
-
 //Player Name
 string name = "";
 
 string TimeStr = to_string(GameTime);
 
-//The window we'll be rendering to
+// The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 
-//The window renderer
+// The window renderer
 SDL_Renderer* gRenderer = NULL;
 
 //Scene textures
-LTexture gFooTexture;
-LTexture gFooTexture_2;
-LTexture gBackgroundTexture;
+// LTexture gFooTexture;
+// LTexture gFooTexture_2;
+// LTexture gBackgroundTexture;
 LTexture gstartscreen;
 LTexture gwaitscreen;
 LTexture gstartcontrol;
@@ -71,6 +70,9 @@ Mix_Chunk *gScratch = NULL;
 Mix_Chunk *gHigh = NULL;
 Mix_Chunk *gMedium = NULL;
 Mix_Chunk *gLow = NULL;
+
+//Main loop flag
+bool quit = false;
 
 /*-----FUNCTIONS-----*/
 
@@ -160,25 +162,8 @@ void* start(void* arg){
 						TimeStart = std::chrono::system_clock::now();
 					}
 					else{
-						TimeEnd = std::chrono::system_clock::now();
-        				std::chrono::duration<double> elapsed_seconds = TimeEnd - TimeStart;
-        				MatchTime = GameTime - elapsed_seconds.count();
-        				//cout<<MatchTime<<" "<<CountTime<<endl;
-        				if(MatchTime <= CountTime){
-        					std::stringstream stream;
-							stream << std::fixed << std::setprecision(1) << CountTime;
-							TimeStr = stream.str();
-							cout<<TimeStr<<endl;
-        					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25);
-        					CountTime = CountTime - 1;
-        					if(0>=CountTime){
-        						GameOver = true;
-        					}
-        				}
-						//Render background texture to screen
-						// gBackgroundTexture.render( 0, 0 );
-
-						// Create viewports
+						// Create viewports for maze
+						// always render maze prior to everything
 						int i, j;
 						for (i = 0; i < SCREEN_HEIGHT / TILE_SIZE; i++){
 							for (j = 0; j < SCREEN_WIDTH / TILE_SIZE; j++){
@@ -202,10 +187,24 @@ void* start(void* arg){
 						renderQuad.h = server_player.PLAYER_HEIGHT;
 						SDL_RenderSetViewport(gRenderer, &renderQuad);
 						SDL_RenderCopy(gRenderer, server_playerTexture, NULL, NULL);
-						//Screen_Time.render(910,30);
-						//Render Foos to the screen
-						// gFooTexture.render(x,y);
-						// gFooTexture_2.render(x2,y2);
+
+						// render timer
+						TimeEnd = std::chrono::system_clock::now();
+        				std::chrono::duration<double> elapsed_seconds = TimeEnd - TimeStart;
+        				MatchTime = GameTime - elapsed_seconds.count();
+        				//cout<<MatchTime<<" "<<CountTime<<endl;
+        				if(MatchTime <= CountTime){
+        					std::stringstream stream;
+							stream << std::fixed << std::setprecision(1) << CountTime;
+							TimeStr = stream.str();
+							cout<<TimeStr<<endl;
+        					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25);
+        					Screen_Time.render(510,170);
+							CountTime = CountTime - 1;
+        					if(0>=CountTime){
+        						GameOver = true;
+        					}
+        				}
 					}
 				}
 				//Update screen
