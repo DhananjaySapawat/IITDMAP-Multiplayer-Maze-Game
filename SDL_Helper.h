@@ -772,7 +772,7 @@ bool loadMedia()
 		success = false;
 	}
 	//Load music
-	gMusic = Mix_LoadMUS( "beat.wav" );
+	gMusic = Mix_LoadMUS( "backgroundmusic.wav" );
 	if( gMusic == NULL )
 	{
 		printf( "Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError() );
