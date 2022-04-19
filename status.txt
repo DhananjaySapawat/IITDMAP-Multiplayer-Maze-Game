@@ -3,3 +3,5 @@
 Issues:
 - Due to packet loss between the server the client, the players move out of sync on the two devices.
 - Unable to run the game on IITD's wifi. Works fine on hotspot.
+- The following error occurs randomnly some of times:
+ XXX: resource creation failed
