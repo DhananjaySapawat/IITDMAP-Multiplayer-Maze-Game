@@ -22,17 +22,21 @@ Burouj Armgaan | 2021vsn9003
 - `pthread.h`
 
 ### LIST OF FILES
-- `SDL_help.h`: Contains functions handling SDL rendering, SDL IO and sockets.
+- `SDL_help.h` : Contains functions handling SDL rendering, SDL IO and sockets.
 
-- `Player.cpp`: Contains class for players that run in the maze.
+- `Player.cpp` : Contains class for players that run in the maze.
 
-- `server.cpp`: Makes server side calls.
+- `subtask2_server.cpp` : Makes server side calls.
 
-- `client.cpp`: Makes client side calls.
+- `subtask2_client.cpp` : Makes client side calls.
 
-- `Image`: Directory containing background images and player images.
+- `constants.h` : Contains the IITD map and constants like screen width, etc.
 
-- `Audio`: Directory containing background audio.
+- `Makefile` : Makefile
+
+- `Image` : Directory containing background images and player images.
+
+- `Audio` : Directory containing background audio.
 
 ### DEPENDENCIES
 - Install SDL. Here is a good resource for installation instructions: https://lazyfoo.net/tutorials/SDL/01_hello_SDL/index.php
@@ -54,6 +58,9 @@ Burouj Armgaan | 2021vsn9003
 - Run `./server <server's IP>` on server's machine.
 - Run `./server <client's IP>` on client's machine.
 - The game will launch automatically on both systems.
+
+### SHORTCOMING
+- Packet drop between server and client leads to asynchonous movement.
 
 ### RESOURCES USED
 - Lazy Foo's Productions : https://lazyfoo.net/tutorials/SDL/
