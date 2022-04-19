@@ -611,7 +611,7 @@ bool loadMedia()
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
-	if( !Screen_WinnerName.Text_init(myfont,"Win the Game",{255,255,255},25) ){
+	if( !Screen_WinnerName.Text_init(myfont,"Won the Game",{255,255,255},25) ){
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
