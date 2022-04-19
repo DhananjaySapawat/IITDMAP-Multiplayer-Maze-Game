@@ -65,6 +65,8 @@ enum LButtonSprite{
 Player server_player(1,1);
 Player client_player(1,4);
 
+
+
 /*-----CLASS-----*/
 
 void Keyboard_Start_Screen(SDL_Event e , int c);
@@ -154,7 +156,7 @@ bool LTexture::loadFromFile(std::string path,bool backscreen)
 	else
 	{
 		//Color key image
-		SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 0, 0xFF, 0xFF ) );
+		SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 0, 0x00, 0x00 ) );
 
 		//Create texture from surface pixels
         newTexture = SDL_CreateTextureFromSurface( gRenderer, loadedSurface );
@@ -277,8 +279,8 @@ void Ltext::free(){
 extern LTexture gstartscreen,gstartcontrol,gstartinstruction;
 //Scene Text
 extern Ltext Screen_Start,Screen_Controls,Screen_Instructions,Screen_Quit,Screen_Wait1,Screen_Wait2;
-extern Ltext Screen_GetName,Screen_Time,Screen_Space,Screen_Winner,Screen_WinnerName;
-extern Ltext Screen_Back,Screen_Keyboard,Screen_Gamepad;
+extern Ltext Screen_GetName,Screen_Time,Screen_Space,Screen_Winner,Screen_WinnerName,Screen_Chase,Screen_Back;
+extern Ltext Screen_Keyboard,Screen_Gamepad,Screen_RedWin,Screen_BlueWin,Screen_RedTime,Screen_BlueTime;
 
 /*-----GLOBAL-TEXTURES-----*/
 
@@ -542,7 +544,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Load background texture and player texture
-	if (!mapTexture.loadFromFile("Image/tile.png", true) || !server_playerTexture.loadFromFile("Image/undertale.png", true) || !client_playerTexture.loadFromFile("Image/undertale.png", true)){
+	if (!mapTexture.loadFromFile("Image/tile.png", true) || !server_playerTexture.loadFromFile("Image/red-block.png", true) || !client_playerTexture.loadFromFile("Image/blue-block.png", true)){
 	// if( !gBackgroundTexture.loadFromFile("background.png",true ) )
 		printf( "Failed to load background texture image!\n" );
 		success = false;
@@ -559,7 +561,7 @@ bool loadMedia()
 		success = false;
 	}
 
-	if ( !gstartinstruction.loadFromFile("Image/ins.png",true ))
+	if ( !gstartinstruction.loadFromFile("Image/instructions.png",true ))
 	{
 		printf( "Failed to load background start image!\n" );
 		success = false;
@@ -625,8 +627,28 @@ bool loadMedia()
 		printf( "Failed to load text!\n" );
 		success = false;
 	}
+	if( !Screen_RedWin.Text_init(myfont,"Red Wins",{255,255,255},20) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_BlueWin.Text_init(myfont,"Blue Wins",{255,255,255},20) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_RedTime.Text_init(myfont,"T > 0 seconds",{255,255,255},20) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_BlueTime.Text_init(myfont,"T = 0 seconds",{255,255,255},20) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
+	if( !Screen_Chase.Text_init(myfont,"Red Chasing Blue",{255,255,255},20) ){
+		printf( "Failed to load text!\n" );
+		success = false;
+	}
 	//Load music
-	gMusic = Mix_LoadMUS( "Audio/scratch.wav" );
+	gMusic = Mix_LoadMUS( "Audio/backgroundmusic.wav" );
 	if( gMusic == NULL )
 	{
 		printf( "Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError() );
@@ -793,8 +815,16 @@ void Mouse_Handle(SDL_Event e , int c){
 	//Get mouse position
 	int mx, my;
 	SDL_GetMouseState(&mx,&my);
-	if(e.type == SDL_MOUSEBUTTONDOWN and gamepart[1] == true){
-		gamepart[1] = false;
+	if(gamepart[1] == true){
+		if(e.type == SDL_MOUSEBUTTONDOWN and checkback(mx,my)){
+			gamepart[1] = false;
+		}
+		return;
+	}
+	if(gamepart[2] == true){
+		if(e.type == SDL_MOUSEBUTTONDOWN and checkback(mx,my)){
+			gamepart[2] = false;
+		}
 		return;
 	}
 	int p = check(mx,my);
@@ -827,8 +857,6 @@ void Server_Keyboard_Handle(SDL_Event e){
 			GameOver = false;
 			MatchTime = GameTime;
 			CountTime = GameTime-1;
-			cout<<name<<endl;
-			cout<<name2<<endl;
 		}
 	}
 	else if(getname){
@@ -868,58 +896,6 @@ void Server_Keyboard_Handle(SDL_Event e){
 			server_player.move(msg);
 			break;
 		}
-
-		//Play high sound effect
-    	case SDLK_1:{
-			Mix_PlayChannel( -1, gHigh, 0 );
-			break;
-		}
-                            
-    	//Play medium sound effect
-    	case SDLK_2:{
-			Mix_PlayChannel( -1, gMedium, 0 );
-			break;
-		}
-                            
-    	//Play low sound effect
-    	case SDLK_3:{
-			Mix_PlayChannel( -1, gLow, 0 );
-			break;
-		}
-                            
-    	//Play scratch sound effect
-    	case SDLK_4:{
-			Mix_PlayChannel( -1, gScratch, 0 );
-			break;
-		}
-
-    	case SDLK_9:{
-			//If there is no music playing
-			if( Mix_PlayingMusic() == 0 ){
-				//Play the music
-				Mix_PlayMusic( gMusic, -1 );
-			}
-			//If music is being played
-			else{
-				//If the music is paused
-				if( Mix_PausedMusic() == 1 ){
-					//Resume the music
-					Mix_ResumeMusic();
-				}
-				//If the music is playing
-				else{
-					//Pause the music
-					Mix_PauseMusic();
-				}
-			}
-			break;
-		}
-    
-		case SDLK_0:{
-			//Stop the music
-			Mix_HaltMusic();
-			break;
-		}
     }
     return;
 }
@@ -934,8 +910,6 @@ void Client_Keyboard_Handle(SDL_Event e){
 			GameOver = false;
 			MatchTime = GameTime;
 			CountTime = GameTime-1;
-			cout<<name<<endl;
-			cout<<name2<<endl;
 		}
 	}
 	else if(getname){
@@ -976,63 +950,8 @@ void Client_Keyboard_Handle(SDL_Event e){
 			break;
 		}
 
-		//Play high sound effect
-    	case SDLK_1:
-    	{
-    	Mix_PlayChannel( -1, gHigh, 0 );
-    	break;
-		}
-                            
-    	//Play medium sound effect
-    	case SDLK_2:
-    	{
-    	Mix_PlayChannel( -1, gMedium, 0 );
-    	break;
-		}
-                            
-    	//Play low sound effect
-    	case SDLK_3:
-    	{
-    	Mix_PlayChannel( -1, gLow, 0 );
-    	break;
-		}
-                            
-    	//Play scratch sound effect
-    	case SDLK_4:
-    	{
-    	Mix_PlayChannel( -1, gScratch, 0 );
-    	break;
-		}
+	}
 
-    	case SDLK_9:{
-    	//If there is no music playing
-		if( Mix_PlayingMusic() == 0 ){
-			//Play the music
-			Mix_PlayMusic( gMusic, -1 );
-		}
-		//If music is being played
-		else{
-			//If the music is paused
-			if( Mix_PausedMusic() == 1 ){
-				//Resume the music
-				Mix_ResumeMusic();
-       	    }
-			//If the music is playing
-			else{
-				//Pause the music
-				Mix_PauseMusic();
-			}
-		}
-		break;
-		}
-                            
-		case SDLK_0:
-		{
-		//Stop the music
-		Mix_HaltMusic();
-		break;
-		}
-    }
     return ;
 }
 

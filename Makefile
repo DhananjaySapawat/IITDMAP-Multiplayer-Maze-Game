@@ -1,5 +1,5 @@
 #OBJS specifies which files to compile as part of the project
-OBJS = subtask2.cpp
+OBJS = subtask2_server.cpp
 OBJS2 = subtask2_client.cpp
 #CC specifies which compiler we're using
 CC = g++
@@ -18,9 +18,7 @@ OBJ_NAME2 = client
 #This is the target that compiles our executable
 all : 
 
-s : $(OBJS)
+s : 
 	$(CC) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME) -pthread
-	./$(OBJ_NAME)	127.0.0.1
-c : $(OBJS2)
+c : 
 	$(CC) $(OBJS2) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME2) -pthread
-	./$(OBJ_NAME2)	127.0.0.1

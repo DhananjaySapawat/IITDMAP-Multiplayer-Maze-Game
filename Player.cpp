@@ -11,7 +11,7 @@ class Player{
         //The X and Y offsets of the player
         int mPosX, mPosY;
 
-        const int PLAYER_VEL = TILE_SIZE/5;
+        const int PLAYER_VEL = TILE_SIZE;
 
         //The dimensions of the player block
         static const int PLAYER_WIDTH = TILE_SIZE;

@@ -26,6 +26,9 @@ bool Player2 = false;
 bool GameOver = false;
 double CountTime = GameTime-1;
 bool collision = false;
+bool win;
+string GameWinner;
+
 //Player Name
 string name = "";
 string name2;
@@ -60,7 +63,11 @@ Ltext Screen_WinnerName;
 Ltext Screen_Back;
 Ltext Screen_Keyboard;
 Ltext Screen_Gamepad;
-
+Ltext Screen_RedWin;
+Ltext Screen_BlueWin;
+Ltext Screen_RedTime;
+Ltext Screen_BlueTime;
+Ltext Screen_Chase;
 
 //Game Controller 1 handler
 SDL_Joystick* gGameController = NULL;
@@ -120,6 +127,10 @@ void* start(void* arg){
 				SDL_RenderClear( gRenderer );
 
 				if(GameOver){
+					server_player.mPosX = 1; 
+					client_player.mPosX = 1;
+					server_player.mPosY = 1;
+					client_player.mPosY = 4;
 					gstartscreen.render(0,0);
 					Screen_Space.mid = true;
 					Screen_WinnerName.mid = true;
@@ -147,6 +158,17 @@ void* start(void* arg){
 					}
 					else if (gamepart[2] == true){
 						gstartinstruction.render(0,0);
+						Screen_Back.render(1010,40);
+						Screen_RedTime.render(430,210);
+						Screen_BlueTime.render(850,210);
+						Screen_RedWin.render(480,440);
+						Screen_BlueWin.render(890,440);
+						Screen_Chase.render(20,440);
+						for(int i = 0;i<5;i++){
+							SDL_Rect outlineRect = {990-i,25-i,155+2*i,65+2*i};
+                			SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );        
+                			SDL_RenderDrawRect( gRenderer, &outlineRect );
+                		}
 					}
 					else if(gamepart[3] == true){
 						quit = true;
@@ -209,7 +231,7 @@ void* start(void* arg){
         					std::stringstream stream;
 							stream << std::fixed << std::setprecision(1) << CountTime;
 							TimeStr = stream.str();
-							cout<<TimeStr<<endl;
+							//cout<<TimeStr<<endl;
         					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},85);
         					Screen_Time.render(SCREEN_WIDTH - 6 * TILE_SIZE, SCREEN_HEIGHT - 2 * TILE_SIZE);
 							CountTime = CountTime - 1;
@@ -217,14 +239,20 @@ void* start(void* arg){
         						collision = true;
         					}
         					if(collision == true){
+        						Mix_PauseMusic();
+        						Mix_PlayChannel( -1, gHigh, 0 );
 								GameOver = true;
-        						Screen_Winner.Text_init(myfont,name,{255,255,255},85);
-								Mix_PauseMusic();
+								win = false;
+								GameWinner = name2;
+								Screen_Winner.Text_init(myfont,GameWinner,{255,255,255},85);
 							}
         					if(0>=CountTime ){
         						GameOver = true;
         						Screen_Winner.Text_init(myfont,name,{255,255,255},85);
 								Mix_PauseMusic();
+								win = true;
+								GameWinner = name;
+								Screen_Winner.Text_init(myfont,GameWinner,{255,255,255},85);
         					}
         				}
 							}
