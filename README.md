@@ -48,10 +48,10 @@ Burouj Armgaan | 2021vsn9003
 - Clone the repostitory on two devices. Assume one to be server and one to be client.
 - Open terminal in the cloned repo's directory.
 - On Linux, install above above mentioned dependencies as follows (for other OS, refer to the above given link):
-		a) sudo apt-get install libsdl2-dev
-		b) sudo apt-get install libsdl-image1.2-dev
-		c) sudo apt install libsdl1.2-dev libsdl-mixer1.2-dev
-		d) sudo apt-get install libsdl2-ttf-dev
+	- sudo apt-get install libsdl2-dev
+	- sudo apt-get install libsdl-image1.2-dev
+	- sudo apt install libsdl1.2-dev libsdl-mixer1.2-dev
+	- sudo apt-get install libsdl2-ttf-dev
 - Connect both to the same hotspot.
 - Run `make s` on the server.
 - Run `make c` on the client.
