@@ -24,7 +24,7 @@ extern bool Player2,gamestart,quit,getname,GameOver;
 bool backhover = false;
 double g = 0.1;
 double t = g;
-double GameTime = 120.00;
+double GameTime = 30.00;
 extern double MatchTime,CountTime;
 int startfontsize = 40;
 int array_sx[4][4] = {{490,155,235,75},{430,235,360,80},{380,315,500,80},{500,395,190,75}};
@@ -63,7 +63,7 @@ enum LButtonSprite{
 
 //Players
 Player server_player(1,1);
-Player client_player(1,1);
+Player client_player(1,4);
 
 /*-----CLASS-----*/
 

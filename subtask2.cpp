@@ -26,6 +26,7 @@ bool gamepart[4] = {false};
 bool Player2 = false;
 bool GameOver = false;
 double CountTime = GameTime-1;
+bool collision = false;
 
 //Player Name
 string name = "";
@@ -125,6 +126,7 @@ void* start(void* arg){
 					Screen_Space.render(180,360);
 					Screen_WinnerName.render(460,200);
 					Screen_Winner.render(100,50);
+					collision = false;
 				}
 				else if(getname == true){
 					gstartscreen.render(0,0);
@@ -210,10 +212,19 @@ void* start(void* arg){
         					Screen_Time.Text_init(myfont,TimeStr,{255,255,255},25);
 							Screen_Time.render(SCREEN_WIDTH - 6 * TILE_SIZE, SCREEN_HEIGHT - 2 * TILE_SIZE);
         					CountTime = CountTime - 1;
-        					if(0>=CountTime){
+
+        					if (server_player.mPosX == client_player.mPosX && server_player.mPosY == client_player.mPosY){
+        						collision = true;
+        					}
+        					if(collision == true){
+								GameOver = true;
+        						Screen_Winner.Text_init(myfont,name,{255,255,255},85);
+								Mix_PauseMusic();
+							}
+        					if(0>=CountTime ){
         						GameOver = true;
         						Screen_Winner.Text_init(myfont,name,{255,255,255},85);
-							Mix_PauseMusic();
+								Mix_PauseMusic();
         					}
         				}
 					}
