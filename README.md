@@ -49,8 +49,8 @@ Burouj Armgaan | 2021vsn9003
 - Open terminal in the cloned repo's directory.
 - On Linux, install above above mentioned dependencies as follows (for other OS, refer to the above given link):
 	- sudo apt-get install libsdl2-dev
-	- sudo apt-get install libsdl-image1.2-dev
-	- sudo apt install libsdl1.2-dev libsdl-mixer1.2-dev
+	- sudo apt-get install libsdl2-image-dev
+	- sudo apt-get install libsdl2-mixer-dev
 	- sudo apt-get install libsdl2-ttf-dev
 - Connect both to the same hotspot.
 - Run `make s` on the server.
