@@ -56,7 +56,7 @@ Burouj Armgaan | 2021vsn9003
 - Run `make s` on the server.
 - Run `make c` on the client.
 - Run `./server <server's IP>` on server's machine.
-- Run `./server <client's IP>` on client's machine.
+- Run `./client <client's IP>` on client's machine.
 - The game will launch automatically on both systems.
 
 ### SHORTCOMING
